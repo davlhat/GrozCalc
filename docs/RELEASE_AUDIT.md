@@ -35,3 +35,7 @@
 9. Test bad inputs, missing sessions, account isolation and 404s for another user's products.
 
 Do not advertise the prototype as having 60 verified supermarket products or complete bilingual localization until these acceptance criteria are met.
+
+## Administrator-managed retailer catalog (October 2026)
+
+The 60 retailer-associated source records are imported into PostgreSQL on `cd server && npm run db`. A dedicated `catalog_seed_history` table ensures the migration is idempotent and never restores a product intentionally deleted by an administrator. Admin product browsing, searching, editing and deletion are performed against the PostgreSQL `products` table. Seeded Lidl entries retain `estimated=true` and their estimate explanation. Marking a product verified clears the estimate flag; this must only be done after checking its actual label. Existing historical showcase diary entries continue to reference their original embedded IDs. No direct arbitrary SQL execution is exposed in the web admin panel.
