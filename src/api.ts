@@ -1,16 +1,16 @@
 const API=import.meta.env.VITE_API_URL||'http://localhost:3001';
 export type ServerProduct={id:string;name:string;brand:string;store:string;calories:string;protein:string;fat:string;carbs:string;additives:string;recommendation:string;image_url:string|null};
-export async function fetchProducts():Promise<ServerProduct[]>{const r=await fetch(API+'/api/products');if(!r.ok)throw new Error('Unable to load product catalog');return r.json()}
+export async function fetchProducts():Promise<ServerProduct[]>{const r=await fetch(API+'/api/products',{credentials:'include'});if(!r.ok)throw new Error('Unable to load product catalog');return r.json()}
 export async function healthcheck():Promise<boolean>{try{const r=await fetch(API+'/health');return r.ok}catch{return false}}
 
 export type ProductInput={name:string;brand:string;store:'Rimi'|'Maxima'|'Lidl'|'Other';calories:number;protein:number;fat:number;carbs:number;additives:string;ingredients:string;recommendation:'Neitrāls'|'Neieteicams'|'Ļoti ieteicams';image_url?:string|null;source_url?:string|null};
-export async function createCatalogProduct(input:ProductInput,key:string):Promise<ServerProduct>{const r=await fetch(API+'/api/admin/products',{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':key},body:JSON.stringify(input)});if(!r.ok){const body=await r.json().catch(()=>({}));throw new Error(r.status===403?'Invalid administrator key':body.error||'Unable to save product')}return r.json()}
-export async function deleteCatalogProduct(id:number,key:string):Promise<void>{const r=await fetch(API+'/api/admin/products/'+id,{method:'DELETE',headers:{'x-admin-key':key}});if(!r.ok)throw new Error(r.status===403?'Invalid administrator key':'Unable to delete product')}
-export async function exportCatalog(key:string):Promise<void>{const r=await fetch(API+'/api/admin/export',{headers:{'x-admin-key':key}});if(!r.ok)throw new Error(r.status===403?'Invalid administrator key':'Export failed');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='grozcalc-products.json';a.click();URL.revokeObjectURL(url)}
+export async function createCatalogProduct(input:ProductInput,key:string):Promise<ServerProduct>{const r=await fetch(API+'/api/admin/products',{credentials:'include',method:'POST',headers:{'Content-Type':'application/json','x-admin-key':key},body:JSON.stringify(input)});if(!r.ok){const body=await r.json().catch(()=>({}));throw new Error(r.status===403?'Invalid administrator key':body.error||'Unable to save product')}return r.json()}
+export async function deleteCatalogProduct(id:number,key:string):Promise<void>{const r=await fetch(API+'/api/admin/products/'+id,{credentials:'include',method:'DELETE',headers:{'x-admin-key':key}});if(!r.ok)throw new Error(r.status===403?'Invalid administrator key':'Unable to delete product')}
+export async function exportCatalog(key:string):Promise<void>{const r=await fetch(API+'/api/admin/export',{credentials:'include',headers:{'x-admin-key':key}});if(!r.ok)throw new Error(r.status===403?'Invalid administrator key':'Export failed');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='grozcalc-products.json';a.click();URL.revokeObjectURL(url)}
 
 const devIdKey='gc-dev-profile-id';
 export function devProfileId():string{let id=localStorage.getItem(devIdKey);if(!id){id='dev_'+crypto.randomUUID().replaceAll('-','');localStorage.setItem(devIdKey,id)}return id}
-async function diaryRequest(path:string,init?:RequestInit){const r=await fetch(API+path,{...init,headers:{'x-dev-user-id':devProfileId(),...(init?.body?{'Content-Type':'application/json'}:{}),...init?.headers}});if(!r.ok)throw new Error('Diary database request failed ('+r.status+')');return r.status===204?null:r.json()}
+async function diaryRequest(path:string,init?:RequestInit){const r=await fetch(API+path,{credentials:'include',...init,headers:{'x-dev-user-id':devProfileId(),...(init?.body?{'Content-Type':'application/json'}:{}),...init?.headers}});if(!r.ok)throw new Error('Diary database request failed ('+r.status+')');return r.status===204?null:r.json()}
 export type SqlDiaryEntry={id:string;product_id:string;entry_date:string;grams:string};
 export async function fetchDiary():Promise<SqlDiaryEntry[]>{return diaryRequest('/api/diary')}
 export async function addDiary(productId:number,date:string,grams:number):Promise<SqlDiaryEntry>{return diaryRequest('/api/diary',{method:'POST',body:JSON.stringify({product_id:productId,entry_date:date,grams})})}
@@ -23,8 +23,13 @@ export async function setListItem(kind:'favorite'|'blacklist',id:number,enabled:
 export async function uploadCatalogImage(file:File,key:string):Promise<string>{
  if(!['image/png','image/jpeg','image/webp'].includes(file.type))throw new Error('Select a PNG, JPEG or WebP image');
  if(file.size>3*1024*1024)throw new Error('Image must be smaller than 3 MB');
- const r=await fetch(API+'/api/admin/upload',{method:'POST',headers:{'x-admin-key':key,'Content-Type':file.type},body:file});
+ const r=await fetch(API+'/api/admin/upload',{credentials:'include',method:'POST',headers:{'x-admin-key':key,'Content-Type':file.type},body:file});
  const body=await r.json().catch(()=>({}));
  if(!r.ok)throw new Error(body.error||'Image upload failed ('+r.status+')');
  return new URL(body.image_url,API).href;
 }
+
+export type Account={id:string;email:string;role:'user'|'admin'};
+export async function currentAccount():Promise<Account|null>{const r=await fetch(API+'/api/auth/me',{credentials:'include'});if(!r.ok)throw new Error('Account check failed');return (await r.json()).user}
+export async function accountAction(action:'login'|'register',email:string,password:string):Promise<Account>{const r=await fetch(API+'/api/auth/'+action,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(body.error||'Authentication failed');return body}
+export async function signOut():Promise<void>{const r=await fetch(API+'/api/auth/logout',{method:'POST',credentials:'include'});if(!r.ok)throw new Error('Unable to sign out')}
