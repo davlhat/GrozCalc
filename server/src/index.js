@@ -150,11 +150,12 @@ app.post('/api/admin/products/import',admin,wrap(async(req,res)=>{
 }));
 app.patch('/api/admin/products/:id',admin,wrap(async(req,res)=>{
  const id=z.coerce.number().int().positive().parse(req.params.id);
- const update=product.partial().extend({verified:z.boolean().optional()}).strict().parse(req.body);
+ const update=product.partial().extend({verified:z.boolean().optional(),estimated:z.boolean().optional(),estimate_basis:z.string().max(500).nullable().optional()}).strict().parse(req.body);
  if(!Object.keys(update).length)return res.status(400).json({error:'No changes supplied'});
  const existing=await pool.query('SELECT source_url,verified FROM products WHERE id=$1',[id]);
  if(!existing.rowCount)return res.status(404).json({error:'Product not found'});
  const source=update.source_url===undefined?existing.rows[0].source_url:update.source_url;
+ if(update.verified===true){update.estimated=false;update.estimate_basis=null;}
  if(update.verified===true&&!source)return res.status(400).json({error:'A nutrition source URL is required before verification'});
  const cols=Object.keys(update),values=Object.values(update);
  const r=await pool.query('UPDATE products SET '+cols.map((k,i)=>k+'=$'+(i+1)).join(',')+' WHERE id=$'+(cols.length+1)+' RETURNING *',[...values,id]);
