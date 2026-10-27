@@ -37,6 +37,10 @@ Projekta sākotnējā specifikācijā paredzēts arī React Native, Python datu 
 
 **Nedrīkst prezentēt visus 60 ierakstus kā verificētus.** Precīzai uztura uzskaitei jāpārbauda produkta etiķete.
 
+## Android lietotnes testēšana
+
+Android tālruņa testēšanai pievienots **Capacitor** ietvars, kas ļauj instalēt GrozCalc kā Android lietotni. Skatiet [Windows/Android instrukciju](docs/ANDROID.md), lai ģenerētu Android Studio projektu, pieslēgtu tālruni ar USB un izmantotu lokālo PostgreSQL serveri. Šobrīd tā ir **izstrādes/testa** lietotne, nevis neatkarīga publiski izvietota APK versija.
+
 ## Lokālā palaišana
 
 Nepieciešams Node.js 22+, Docker Desktop vai PostgreSQL 16.
