@@ -31,3 +31,21 @@
 @media(max-width:700px){.nav-icon{flex-basis:34px}.logo .glass-icon-logo{width:38px!important;height:38px!important}}
 
 .catalog-product-image{width:58px;height:58px;object-fit:contain;background:#f1faf5;border:1px solid #d5eee1;border-radius:14px;margin-bottom:15px;display:block}.upload-success{display:block;color:#158864;margin-top:7px;font-size:11px}
+
+/* Custom goals, compact device preview, and bilingual controls */
+.header-actions{display:flex;align-items:center;gap:7px;margin-left:auto;margin-right:18px}
+.header-actions .soft{white-space:nowrap;padding:7px 10px}
+.preset-choice{display:inline-flex;gap:5px;align-items:center;margin:5px}
+.preset-choice .danger{padding:7px 11px}
+.preset-save{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}
+.preset-save input,.bmi-fields input{padding:10px 12px;border:1px solid #d0e8da;border-radius:9px;color:#286b51;background:#fff}
+.bmi-panel{margin-top:22px;padding:19px;border:1px solid #d9efe3;border-radius:14px;background:#effbf4}
+.bmi-panel h3{font-size:15px}.bmi-fields{display:flex;gap:12px;align-items:end;flex-wrap:wrap}
+.bmi-fields label{display:grid;gap:6px;font-size:11px;color:#518470}.bmi-fields input{width:120px}
+.bmi-fields b{padding:10px;color:#176f54}
+.mobile-preview{max-width:440px;min-height:780px;margin:20px auto;border:7px solid #214d3e;border-radius:28px;overflow:hidden;box-shadow:0 20px 65px #1b58453b;display:block}
+.mobile-preview aside{width:100%;padding:12px;display:flex;flex-direction:row;align-items:center;overflow:auto}
+.mobile-preview .logo{font-size:16px;margin:0 12px 0 0}.mobile-preview .nav{padding:10px;font-size:0}.mobile-preview .nav-caption,.mobile-preview .sidebar-bottom{display:none}
+.mobile-preview header{height:auto;min-height:55px;padding:9px 12px;flex-wrap:wrap;gap:8px}
+.mobile-preview main{padding:24px 14px}.mobile-preview .two{grid-template-columns:1fr}.mobile-preview .cards{grid-template-columns:1fr}.mobile-preview .energy{flex-direction:column}.mobile-preview .form{grid-template-columns:1fr}.mobile-preview .heading{display:block}
+@media(max-width:700px){.header-actions{margin:0}.header-actions .soft{font-size:10px;padding:6px}.status{font-size:9px}}
