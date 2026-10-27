@@ -90,3 +90,10 @@ export async function updateCatalogProduct(id:number,changes:Partial<ProductInpu
  if(!r.ok)throw new Error(body.error||'Product update failed ('+r.status+')');
  return body;
 }
+
+export async function exportMyData():Promise<void>{
+ const r=await fetch(API+'/api/me/export',{credentials:'include'});
+ if(!r.ok)throw new Error('Account export failed ('+r.status+')');
+ const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='grozcalc-my-data.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
