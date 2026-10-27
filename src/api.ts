@@ -79,3 +79,7 @@ export type SavedPreset=NutritionGoals&{id:number;name:string};
 export const getSavedPresets=()=>accountRequest<SavedPreset[]>('/api/me/presets');
 export const createSavedPreset=(preset:Omit<SavedPreset,'id'>)=>accountRequest<SavedPreset>('/api/me/presets',{method:'POST',body:JSON.stringify(preset)});
 export const removeSavedPreset=(id:number)=>accountRequest<void>('/api/me/presets/'+id,{method:'DELETE'});
+
+export type CollectionItem={source:'demo'|'catalog'|'personal';product_id:string;kind:'favorite'|'blacklist'};
+export const getCollections=()=>accountRequest<CollectionItem[]>('/api/me/collections');
+export const changeCollection=(kind:'favorite'|'blacklist',source:CollectionItem['source'],id:number,enabled:boolean)=>accountRequest<void>('/api/me/collections/'+kind+'/'+source+'/'+id,{method:enabled?'PUT':'DELETE'});
