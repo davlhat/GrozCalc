@@ -70,3 +70,13 @@
 .product-actions{margin-top:auto}
 @media(max-width:1200px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:740px){.cards{grid-template-columns:1fr}.product-card-photo{flex-basis:65px;width:65px;height:65px}}
+
+/* Retail-inspired compact wordmarks, CSS only. No external brand assets. */
+.product-card-top .store.shop-rimi{background:#d5222a;color:#fff;border:1px solid #bf1b23;border-radius:4px;font-weight:900;letter-spacing:-.3px;padding:5px 9px}
+.product-card-top .store.shop-maxima{background:#1262c6;color:#fff;border:1px solid #0753b1;border-radius:4px;font-weight:900;font-style:italic;letter-spacing:-.45px;padding:5px 9px}
+.product-card-top .store.shop-lidl{background:#ffe330;color:#064aa1;border:1px solid #e4c823;border-radius:3px;padding:4px 9px;font-weight:900;letter-spacing:-.6px}
+.lidl-wordmark{font-family:Arial,Helvetica,sans-serif;font-weight:900;font-size:13px;color:#0848a5;text-transform:uppercase;line-height:1}
+.lidl-wordmark span{color:#df222a;text-transform:lowercase;font-weight:900}
+.product-card-top .store.shop-other{background:#e8f3ed;color:#476e5e;border:1px solid #cce3d5;border-radius:4px}
+.filter .nutrient-filter{flex:0 1 145px;min-width:115px;max-width:165px}
+@media(max-width:700px){.filter .nutrient-filter{flex:1 1 130px;max-width:none}}
