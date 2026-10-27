@@ -80,3 +80,10 @@
 .product-card-top .store.shop-other{background:#e8f3ed;color:#476e5e;border:1px solid #cce3d5;border-radius:4px}
 .filter .nutrient-filter{flex:0 1 145px;min-width:115px;max-width:165px}
 @media(max-width:700px){.filter .nutrient-filter{flex:1 1 130px;max-width:none}}
+
+.account-link{background:#e5f7ee;border:1px solid #ccebdd;border-radius:10px;color:#236e54;font-size:11px;font-weight:700;text-align:left;padding:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:16px}
+.auth-panel{max-width:600px}.auth-form{display:grid;gap:16px;margin:20px 0}
+.auth-form label{display:grid;gap:8px;font-size:11px;font-weight:800;color:#4e806b}
+.auth-form input{border:1px solid #cde7d8;border-radius:10px;padding:13px;background:#fff;color:#204d3c}
+.auth-form .primary{justify-self:start}
+@media(max-width:700px){.account-link{max-width:145px;flex:0 0 145px;margin:0}}
