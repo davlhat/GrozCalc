@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import {spawn} from 'node:child_process';
+import {setTimeout as sleep} from 'node:timers/promises';
+const base='http://127.0.0.1:3001',server=spawn(process.execPath,['src/index.js'],{cwd:new URL('../server/',import.meta.url),env:{...process.env,PORT:'3001',CORS_ORIGIN:'http://localhost:5173'},stdio:'pipe'});
+let output='';server.stderr.on('data',b=>output+=b.toString());server.stdout.on('data',b=>output+=b.toString());
+async function request(path,{method='GET',body,cookie,origin='http://localhost:5173'}={}){const headers={origin};if(body!==undefined)headers['content-type']='application/json';if(cookie)headers.cookie=cookie;const response=await fetch(base+path,{method,headers,body:body===undefined?undefined:JSON.stringify(body)});return {status:response.status,headers:response.headers,data:await response.json().catch(()=>null)}}
+try{
+ let ready=false;for(let i=0;i<70;i++){try{const r=await fetch(base+'/health');if(r.ok){ready=true;break}}catch{}await sleep(150)}assert(ready,'Server did not start: '+output);
+ const tag=Date.now().toString(36),pass='TestPassphrase!123';
+ const signup=async n=>{const r=await request('/api/auth/register',{method:'POST',body:{email:'ci-'+tag+'-'+n+'@example.test',password:pass}});assert.equal(r.status,201,JSON.stringify(r.data));return r.headers.get('set-cookie')?.split(';')[0]};
+ const a=await signup('a'),b=await signup('b');assert(a&&b,'Missing session cookie');
+ const noSession=await request('/api/me/collections');assert.equal(noSession.status,401);
+ const unauthDiary=await request('/api/diary');assert.equal(unauthDiary.status,401);
+ const p=await request('/api/me/products',{method:'POST',cookie:a,body:{name:'CI food',brand:'Test',store:'Other',calories:123,protein:12,fat:4,carbs:9,additives:''}});assert.equal(p.status,201,JSON.stringify(p.data));
+ const id=Number(p.data.id);assert(id>0);
+ const denied=await request('/api/me/products/'+id,{method:'DELETE',cookie:b});assert.equal(denied.status,404);
+ const coll=await request('/api/me/collections/favorite/personal/'+id,{method:'PUT',cookie:a});assert.equal(coll.status,204);
+ const mine=await request('/api/me/collections',{cookie:a});assert(mine.data.some(x=>x.kind==='favorite'&&Number(x.product_id)===id));
+ const others=await request('/api/me/collections',{cookie:b});assert(!others.data.some(x=>Number(x.product_id)===id));
+ const entry=await request('/api/me/diary',{method:'POST',cookie:a,body:{product_id:id,entry_date:'2026-10-27',grams:125}});assert.equal(entry.status,201,JSON.stringify(entry.data));
+ const foreign=await request('/api/me/diary',{cookie:b});assert.equal(foreign.status,200);assert(!foreign.data.some(x=>Number(x.product_id)===id));
+ const source=await request('/api/me/showcase-diary',{method:'POST',cookie:a,body:{showcase_id:10000,entry_date:'2026-10-27',grams:80}});assert.equal(source.status,201,JSON.stringify(source.data));
+ const exportA=await request('/api/me/export',{cookie:a});assert.equal(exportA.status,200);assert(exportA.data.personal_diary.length>0);assert(exportA.data.showcase_diary.length>0);
+ const exportB=await request('/api/me/export',{cookie:b});assert.equal(exportB.status,200);assert.equal(exportB.data.personal_diary.length,0);
+ const forbidden=await request('/api/admin/products',{method:'POST',cookie:a,body:{name:'No',brand:'',store:'Other',calories:1,protein:0,fat:0,carbs:0,additives:'',ingredients:'',recommendation:'Neitrāls'}});assert.equal(forbidden.status,403);
+ const csrf=await request('/api/me/collections/favorite/demo/1',{method:'PUT',cookie:a,origin:'https://attacker.example'});assert.equal(csrf.status,403);
+ const remove=await request('/api/me/products/'+id,{method:'DELETE',cookie:a});assert.equal(remove.status,204);
+ const after=await request('/api/me/collections',{cookie:a});assert(!after.data.some(x=>x.source==='personal'&&Number(x.product_id)===id));
+ console.log('PASS: authentication, account isolation, product CRUD, collections, diaries, export, admin guard, origin guard');
+}catch(e){console.error(e);process.exitCode=1}finally{server.kill('SIGTERM')}
