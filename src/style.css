@@ -17,3 +17,5 @@
 
 /* Catalog recommendation badges and accessible filtering */
 .filter{flex-wrap:wrap;align-items:center}.favorite-filter{display:inline-flex;align-items:center;gap:6px;color:#457d6b;font-size:12px;font-weight:700;white-space:nowrap}.favorite-filter input{width:16px;height:16px;accent-color:#1daa85}.quality-badge{display:inline-flex;align-items:center;padding:6px 10px;border-radius:8px;font-size:10px;font-weight:800;margin:2px 0 12px}.quality-good{color:#127957;background:#ddf8e8}.quality-neutral{color:#596c80;background:#eaf1f6}.quality-bad{color:#a45038;background:#fff0e5}.catalog-note{font-size:11px;color:#668e80;margin:12px 0 17px}.catalog-note .soft{padding:6px 9px}
+
+.admin-controls{display:flex;align-items:end;flex-wrap:wrap;gap:12px;padding:18px;margin-top:24px;background:#eaf8f1;border:1px solid #d2ebdd;border-radius:13px}.admin-controls label{flex:1;min-width:220px;font-size:10px;font-weight:800;color:#477c68;letter-spacing:.6px}.admin-controls input{display:block;width:100%;margin-top:8px;background:#fff;border:1px solid #cbe6d8;border-radius:9px;padding:11px}.admin-controls p{width:100%;margin:0;color:#527c6d}
