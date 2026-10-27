@@ -88,6 +88,20 @@ app.delete('/api/me/collections/:kind/:source/:id',requireAccount,wrap(async(req
  const kind=collectionKind.parse(req.params.kind),source=collectionSource.parse(req.params.source),id=collectionId.parse(req.params.id);
  await pool.query('DELETE FROM account_product_lists WHERE user_id=$1 AND source=$2 AND product_id=$3 AND kind=$4',[req.account.id,source,id,kind]);res.status(204).end();
 }));
+
+app.get('/api/me/export',requireAccount,wrap(async(req,res)=>{
+ const id=req.account.id;
+ const [goals,products,diary,sharedDiary,collections,presets]=await Promise.all([
+  pool.query('SELECT calories,protein,fat,carbs,updated_at FROM user_settings WHERE user_id=$1',[id]),
+  pool.query('SELECT id,name,brand,store,calories,protein,fat,carbs,additives FROM user_custom_products WHERE user_id=$1',[id]),
+  pool.query('SELECT id,product_id,entry_date::text,grams FROM personal_diary_entries WHERE user_id=$1',[id]),
+  pool.query('SELECT id,product_id,entry_date::text,grams FROM diary_entries WHERE user_id=$1',[id]),
+  pool.query('SELECT source,product_id,kind FROM account_product_lists WHERE user_id=$1',[id]),
+  pool.query('SELECT id,name,calories,protein,fat,carbs FROM goal_presets WHERE user_id=$1 AND is_system=FALSE',[id])
+ ]);
+ res.setHeader('Content-Disposition','attachment; filename="grozcalc-my-data.json"');
+ res.json({exported_at:new Date().toISOString(),format_version:1,goals:goals.rows[0]||null,products:products.rows,personal_diary:diary.rows,catalog_diary:sharedDiary.rows,collections:collections.rows,presets:presets.rows});
+}));
 app.get('/health',(_,res)=>res.json({ok:true}));
 app.get('/api/products',wrap(async(req,res)=>{const search=String(req.query.search||'').slice(0,100),store=String(req.query.store||'');const r=await pool.query("SELECT * FROM products WHERE (name ILIKE $1 OR brand ILIKE $1) AND ($2='' OR store=$2) ORDER BY name LIMIT 250",['%'+search+'%',store]);res.json(r.rows)}));
 app.post('/api/admin/products',admin,wrap(async(req,res)=>{const p=product.parse(req.body);const cols=Object.keys(p),vals=Object.values(p);const r=await pool.query('INSERT INTO products ('+cols.join(',')+') VALUES ('+cols.map((_,i)=>'$'+(i+1)).join(',')+') RETURNING *',vals);res.status(201).json(r.rows[0])}));
