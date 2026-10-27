@@ -6,14 +6,14 @@
 - Account SQL goals and account-specific custom goal presets; protected built-in presets.
 - Account-owned products, diary CRUD for both shared SQL catalog and personal SQL foods.
 - Favorites and blacklist for **demo, shared catalog, and personal foods** via account SQL collections. Guest collections remain browser-local.
-- Catalog search, shop filter, recommendation filter, protein/calorie filter, sorting, product image upload and manual source review.
+- Catalog search, shop filter, recommendation filter, protein/calorie filter, sorting, product image upload, atomic JSON batch import (1–100 sourced products, initially unverified), and manual source review.
 - SQL export for shared catalog (admin) and personal account data (signed-in users).
 - 55 **illustrative** demo foods (not actual verified Rimi/Maxima/Lidl SKUs).
 - Partial EN/LV translation and mobile layout preview.
 - GitHub Actions CI for frontend build and backend syntax checks.
 
 ## Still required before presenting as production-ready
-1. **60 verified store SKUs:** 20 distinct actual products each from Rimi, Maxima and Lidl with official evidence for nutrition per 100 g. No such data was fabricated or marked verified. This is the biggest content gap.
+1. **60 verified store SKUs:** 20 distinct actual products each from Rimi, Maxima and Lidl with official evidence for nutrition per 100 g. An administrator can import sourced JSON records in bulk, but the records must be researched and checked. No such data was fabricated or marked verified. This is the biggest content gap.
 2. **Complete EN/LV localization:** remaining copy, alerts, validation errors, nutrition terms and admin flows.
 3. **Cross-device guest migration:** old browser-local custom products, diary and collections are not automatically migrated into an account.
 4. **Production auth hardening:** persistent/distributed rate limiter, CSRF protections, password reset and email verification; current in-memory throttling is suitable only for a single-instance demo.
