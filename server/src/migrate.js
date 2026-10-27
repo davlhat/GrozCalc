@@ -1,0 +1,1 @@
+import 'dotenv/config';import{readFile}from'node:fs/promises';import{Pool}from'pg';const pool=new Pool({connectionString:process.env.DATABASE_URL});try{await pool.query(await readFile(new URL('../sql/schema.sql',import.meta.url),'utf8'));console.log('Database initialized');}finally{await pool.end()}
