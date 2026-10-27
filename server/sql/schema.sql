@@ -41,3 +41,19 @@ SELECT v.name,v.calories,v.protein,v.fat,v.carbs,TRUE FROM
 (VALUES ('Maintenance',2700,160,90,310),('Weight loss',2300,160,75,240),('Muscle gain',3000,180,100,350))
 AS v(name,calories,protein,fat,carbs)
 WHERE NOT EXISTS(SELECT 1 FROM goal_presets WHERE is_system=TRUE AND name=v.name);
+
+-- Accounts and opaque, revocable server-side sessions.
+CREATE TABLE IF NOT EXISTS app_users (
+ id UUID PRIMARY KEY,
+ email TEXT NOT NULL UNIQUE,
+ password_hash TEXT NOT NULL,
+ role TEXT NOT NULL DEFAULT 'user' CHECK(role IN ('user','admin')),
+ created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS app_sessions (
+ token_hash TEXT PRIMARY KEY,
+ user_id UUID NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+ expires_at TIMESTAMPTZ NOT NULL,
+ created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS app_sessions_expires_at_idx ON app_sessions(expires_at);
