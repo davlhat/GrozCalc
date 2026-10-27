@@ -101,16 +101,17 @@ app.delete('/api/me/collections/:kind/:source/:id',requireAccount,wrap(async(req
 
 app.get('/api/me/export',requireAccount,wrap(async(req,res)=>{
  const id=req.account.id;
- const [goals,products,diary,sharedDiary,collections,presets]=await Promise.all([
+ const [goals,products,diary,sharedDiary,collections,presets,showcaseDiary]=await Promise.all([
   pool.query('SELECT calories,protein,fat,carbs,updated_at FROM user_settings WHERE user_id=$1',[id]),
   pool.query('SELECT id,name,brand,store,calories,protein,fat,carbs,additives FROM user_custom_products WHERE user_id=$1',[id]),
   pool.query('SELECT id,product_id,entry_date::text,grams FROM personal_diary_entries WHERE user_id=$1',[id]),
   pool.query('SELECT id,product_id,entry_date::text,grams FROM diary_entries WHERE user_id=$1',[id]),
   pool.query('SELECT source,product_id,kind FROM account_product_lists WHERE user_id=$1',[id]),
-  pool.query('SELECT id,name,calories,protein,fat,carbs FROM goal_presets WHERE user_id=$1 AND is_system=FALSE',[id])
+  pool.query('SELECT id,name,calories,protein,fat,carbs FROM goal_presets WHERE user_id=$1 AND is_system=FALSE',[id]),
+  pool.query('SELECT id,showcase_id,entry_date::text,grams FROM account_showcase_diary WHERE user_id=$1',[id])
  ]);
  res.setHeader('Content-Disposition','attachment; filename="grozcalc-my-data.json"');
- res.json({exported_at:new Date().toISOString(),format_version:1,goals:goals.rows[0]||null,products:products.rows,personal_diary:diary.rows,catalog_diary:sharedDiary.rows,collections:collections.rows,presets:presets.rows});
+ res.json({exported_at:new Date().toISOString(),format_version:1,goals:goals.rows[0]||null,products:products.rows,personal_diary:diary.rows,catalog_diary:sharedDiary.rows,showcase_diary:showcaseDiary.rows,collections:collections.rows,presets:presets.rows});
 }));
 
 const showcaseDiaryInput=z.object({showcase_id:z.number().int().min(1).max(999999999),entry_date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/),grams:z.number().positive().max(100000)});
