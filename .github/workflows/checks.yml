@@ -12,6 +12,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm install --no-audit --no-fund
+      - run: node scripts/check-products.mjs
       - run: npm run build
       - run: npm install --no-audit --no-fund
         working-directory: server
