@@ -79,3 +79,14 @@ CREATE TABLE IF NOT EXISTS user_custom_products (
  additives TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS user_custom_products_user_idx ON user_custom_products(user_id);
+
+-- Account-owned foods can be logged independently of the shared catalog.
+CREATE TABLE IF NOT EXISTS personal_diary_entries (
+ id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+ user_id UUID NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+ product_id BIGINT NOT NULL REFERENCES user_custom_products(id) ON DELETE CASCADE,
+ entry_date DATE NOT NULL,
+ grams NUMERIC(10,2) NOT NULL CHECK(grams>0)
+);
+CREATE INDEX IF NOT EXISTS personal_diary_user_date_idx ON personal_diary_entries(user_id,entry_date);
+CREATE INDEX IF NOT EXISTS goal_presets_user_idx ON goal_presets(user_id);
