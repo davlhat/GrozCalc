@@ -7,6 +7,7 @@ import {fileURLToPath} from 'node:url';
 import 'dotenv/config';
 import express from 'express';import cors from 'cors';import{Pool}from'pg';import{z}from'zod';
 const app=express(),pool=new Pool({connectionString:process.env.DATABASE_URL});app.use(cors({origin:process.env.CORS_ORIGIN||'http://localhost:5173',credentials:true}));app.use(express.json({limit:'100kb'}));
+const wrap=fn=>(req,res,next)=>Promise.resolve(fn(req,res)).catch(next);
 const scrypt=promisify(scryptCb),cookieName='gc_session';
 const origin=process.env.CORS_ORIGIN||'http://localhost:5173';
 app.use((req,res,next)=>{if(['POST','PUT','PATCH','DELETE'].includes(req.method)&&req.get('origin')&&req.get('origin')!==origin)return res.status(403).json({error:'Invalid request origin'});next()});
@@ -24,7 +25,7 @@ app.get('/api/auth/me',wrap(async(req,res)=>res.json({user:await sessionUser(req
 app.post('/api/auth/logout',wrap(async(req,res)=>{const token=cookie(req);if(token)await pool.query('DELETE FROM app_sessions WHERE token_hash=$1',[tokenHash(token)]);setSessionCookie(res,'',0);res.status(204).end()}));
 
 const product=z.object({name:z.string().trim().min(1).max(200),brand:z.string().default(''),store:z.enum(['Rimi','Maxima','Lidl','Other']),calories:z.number().nonnegative(),protein:z.number().nonnegative(),fat:z.number().nonnegative(),carbs:z.number().nonnegative(),additives:z.string().default(''),ingredients:z.string().default(''),image_url:z.string().url().nullable().optional(),recommendation:z.enum(['Neitrāls','Neieteicams','Ļoti ieteicams']).default('Neitrāls'),source_url:z.string().url().nullable().optional()});
-const wrap=fn=>(req,res,next)=>Promise.resolve(fn(req,res)).catch(next);
+
 function admin(req,res,next){wrap(async()=>{const user=await sessionUser(req);if(user?.role==='admin')return next();if(process.env.NODE_ENV!=='production'&&process.env.ADMIN_API_KEY&&req.get('x-admin-key')===process.env.ADMIN_API_KEY)return next();return res.status(403).json({error:'Administrator account required'})})(req,res,next)}
 const uploadsDir=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../../uploads');
 app.use('/uploads',express.static(uploadsDir,{index:false,maxAge:'1d',setHeaders(res){res.setHeader('X-Content-Type-Options','nosniff')}}));
