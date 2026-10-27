@@ -84,6 +84,14 @@ export type CollectionItem={source:'demo'|'catalog'|'personal';product_id:string
 export const getCollections=()=>accountRequest<CollectionItem[]>('/api/me/collections');
 export const changeCollection=(kind:'favorite'|'blacklist',source:CollectionItem['source'],id:number,enabled:boolean)=>accountRequest<void>('/api/me/collections/'+kind+'/'+source+'/'+id,{method:enabled?'PUT':'DELETE'});
 
+export async function browseAdminProducts(search='',store='',page=1):Promise<{products:ServerProduct[];total:number;page:number;pageSize:number}>{
+ const params=new URLSearchParams({search,store,page:String(page)});
+ const r=await fetch(API+'/api/admin/products?'+params,{credentials:'include'});
+ const body=await r.json().catch(()=>({}));
+ if(!r.ok)throw new Error(body.error||'Cannot load administrator database ('+r.status+')');
+ return body;
+}
+
 export async function updateCatalogProduct(id:number,changes:Partial<ProductInput>&{verified?:boolean},key=''):Promise<ServerProduct>{
  const r=await fetch(API+'/api/admin/products/'+id,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json','x-admin-key':key},body:JSON.stringify(changes)});
  const body=await r.json().catch(()=>({}));
