@@ -13,4 +13,6 @@ for(const p of rows){
 }
 console.log(counts);
 if(counts.Rimi!==20||counts.Maxima!==20)throw Error('Rimi and Maxima require 20 each');
-if(counts.Lidl<20)console.warn('Lidl products pending label-backed verification');
+if(counts.Lidl!==20)throw Error('Lidl needs 20 provisional entries');
+for(const p of rows.filter(p=>p.store==='Lidl'))if(p.verified!==false||p.estimate!==true||!p.estimate_basis)throw Error('Lidl nutrition must be explicitly marked as unverified estimates: '+p.name);
+console.log('Lidl: 20 provisional estimates, NOT verified nutrition.');
