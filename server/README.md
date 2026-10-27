@@ -19,3 +19,14 @@ New endpoints: `GET/POST /api/diary`, `PATCH/DELETE /api/diary/:id`, `GET /api/l
 **Critical security restriction:** This identifier is **not authentication** and can be spoofed. Do not expose these endpoints to the public internet or store sensitive personal information. Replace with real sessions and authenticated user IDs before any production use. This is only a local proof of SQL persistence. SQL products use database IDs; demo/custom products still use localStorage. Browser storage clearing loses the local identifier, making its SQL diary inaccessible from that browser without restoring the ID.
 
 After pulling backend changes, restart `npm run dev` in `server/` (Node watch may reload automatically). No additional migration is required for these existing tables.
+
+## Account login (development)
+Run `npm run db` after pulling to create `app_users` and `app_sessions` (existing data is retained).
+Restart the backend and frontend. Open **Account** in the sidebar, register with an email and password of at least 10 characters, then sign in.
+Passwords use per-user salted scrypt hashes; sessions are opaque HttpOnly cookies with seven-day expiration and database-backed revocation. API CORS must match the frontend origin exactly (`http://localhost:5173` by default).
+New accounts always have the **user** role. For local development, promote an account manually through PostgreSQL after registration, for example:
+```sql
+UPDATE app_users SET role='admin' WHERE email='your-actual-email@example.com';
+```
+Only run that query for an account you control; do not make admin promotion publicly accessible. Existing `ADMIN_API_KEY` support remains a **development-only** fallback and is disabled when `NODE_ENV=production`.
+**Deployment blockers:** authenticated accounts coexist with a legacy development user-ID fallback, and browser-local demo data is not migrated into the account. Before public deployment, remove development fallbacks, implement request rate limiting and password reset/email verification, and review cross-origin/session security and image hosting.
