@@ -8,12 +8,12 @@
 - Favorites and blacklist for **demo, shared catalog, and personal foods** via account SQL collections. Guest collections remain browser-local.
 - Catalog search, shop filter, recommendation filter, protein/calorie filter, sorting, product image upload, atomic JSON batch import (1–100 sourced products, initially unverified), and manual source review.
 - SQL export for shared catalog (admin) and personal account data (signed-in users).
-- 55 **illustrative** demo foods plus **40 individually source-linked real SKUs** (20 Rimi and 20 Maxima), visible in the catalog without a database import. Lidl source-backed SKUs remain pending.
+- 55 **illustrative** demo foods plus **60 retailer-associated catalog entries**: 20 Rimi and 20 Maxima with individual source links, plus 20 Lidl-category analogues with **estimated, unverified** nutrition. All Lidl estimates are visibly labeled ◷ Estimated · WIP, with an amber warning and category-reference link.
 - Partial EN/LV translation and mobile layout preview.
 - GitHub Actions CI for frontend build and backend syntax checks.
 
 ## Still required before presenting as production-ready
-1. **60 verified store SKUs:** 40 source-linked SKUs are prepared (20 Rimi and 20 Maxima); **20 Lidl-specific Latvian SKUs are not yet sourced with trustworthy per-100g nutrition**. Do not fill the gap with Polish or German Lidl formulas or invented numbers. Data in `data/sourced-products.json` is auditable by direct source links; confirm packaging before high-stakes use.
+1. **60 verified store SKUs:** 40 source-linked SKUs are prepared (20 Rimi and 20 Maxima); **20 Lidl entries are provisional approximations, not verified SKU nutrition**. Their values use typical nutrition for comparable foods; product names are category-level approximations, not proof of an exact package formulation. Data in `data/sourced-products.json` is auditable by direct source links; Confirm all package labels before claiming 60 verified items. Estimates should not be used for medically precise nutrition tracking.
 2. **Complete EN/LV localization:** most static UI copy and common status messages are now translated. Remaining backend-origin error variants and edge-case dynamic notifications still require bilingual QA.
 3. **Cross-device guest migration:** old browser-local custom products, diary and collections are not automatically migrated into an account.
 4. **Production auth hardening:** persistent/distributed rate limiter, CSRF protections, password reset and email verification; current in-memory throttling is suitable only for a single-instance demo.
