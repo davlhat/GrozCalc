@@ -43,6 +43,22 @@ app.post('/api/admin/upload',admin,express.raw({type:['image/png','image/jpeg','
  await writeFile(path.join(uploadsDir,name),data,{flag:'wx'});
  res.status(201).json({image_url:'/uploads/'+name});
 }));
+
+async function requireAccount(req,res,next){try{const user=await sessionUser(req);if(!user)return res.status(401).json({error:'Sign in required'});req.account=user;next()}catch(err){next(err)}}
+const goalInput=z.object({calories:z.number().int().min(1).max(20000),protein:z.number().int().min(0).max(2000),fat:z.number().int().min(0).max(2000),carbs:z.number().int().min(0).max(2000)});
+app.get('/api/me/goals',requireAccount,wrap(async(req,res)=>{
+ const r=await pool.query('SELECT calories,protein,fat,carbs FROM user_settings WHERE user_id=$1',[req.account.id]);
+ res.json(r.rows[0]||null);
+}));
+app.put('/api/me/goals',requireAccount,wrap(async(req,res)=>{
+ const g=goalInput.parse(req.body);
+ const r=await pool.query('INSERT INTO user_settings(user_id,calories,protein,fat,carbs) VALUES($1,$2,$3,$4,$5) ON CONFLICT(user_id) DO UPDATE SET calories=excluded.calories,protein=excluded.protein,fat=excluded.fat,carbs=excluded.carbs,updated_at=now() RETURNING calories,protein,fat,carbs',[req.account.id,g.calories,g.protein,g.fat,g.carbs]);
+ res.json(r.rows[0]);
+}));
+const customInput=z.object({name:z.string().trim().min(1).max(200),brand:z.string().max(200).default(''),store:z.enum(['Rimi','Maxima','Lidl','Other']).default('Other'),calories:z.number().nonnegative().max(10000),protein:z.number().nonnegative().max(1000),fat:z.number().nonnegative().max(1000),carbs:z.number().nonnegative().max(1000),additives:z.string().max(2000).default('')});
+app.get('/api/me/products',requireAccount,wrap(async(req,res)=>{const r=await pool.query('SELECT id,name,brand,store,calories,protein,fat,carbs,additives FROM user_custom_products WHERE user_id=$1 ORDER BY id DESC LIMIT 500',[req.account.id]);res.json(r.rows)}));
+app.post('/api/me/products',requireAccount,wrap(async(req,res)=>{const p=customInput.parse(req.body);const r=await pool.query('INSERT INTO user_custom_products(user_id,name,brand,store,calories,protein,fat,carbs,additives) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',[req.account.id,p.name,p.brand,p.store,p.calories,p.protein,p.fat,p.carbs,p.additives]);res.status(201).json(r.rows[0])}));
+app.delete('/api/me/products/:id',requireAccount,wrap(async(req,res)=>{const id=z.coerce.number().int().positive().parse(req.params.id);const r=await pool.query('DELETE FROM user_custom_products WHERE id=$1 AND user_id=$2 RETURNING id',[id,req.account.id]);res.status(r.rowCount?204:404).end()}));
 app.get('/health',(_,res)=>res.json({ok:true}));
 app.get('/api/products',wrap(async(req,res)=>{const search=String(req.query.search||'').slice(0,100),store=String(req.query.store||'');const r=await pool.query("SELECT * FROM products WHERE (name ILIKE $1 OR brand ILIKE $1) AND ($2='' OR store=$2) ORDER BY name LIMIT 250",['%'+search+'%',store]);res.json(r.rows)}));
 app.post('/api/admin/products',admin,wrap(async(req,res)=>{const p=product.parse(req.body);const cols=Object.keys(p),vals=Object.values(p);const r=await pool.query('INSERT INTO products ('+cols.join(',')+') VALUES ('+cols.map((_,i)=>'$'+(i+1)).join(',')+') RETURNING *',vals);res.status(201).json(r.rows[0])}));
