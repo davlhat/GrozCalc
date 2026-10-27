@@ -34,6 +34,8 @@ try{
  const diaryEdit=await request('/api/me/diary/'+diaryId,{method:'PATCH',cookie:a,body:{grams:150}});assert.equal(diaryEdit.status,200);
  const blockedSourceDelete=await request('/api/me/showcase-diary/'+sourceId,{method:'DELETE',cookie:b});assert.equal(blockedSourceDelete.status,404);
  const sourceEdit=await request('/api/me/showcase-diary/'+sourceId,{method:'PATCH',cookie:a,body:{grams:90}});assert.equal(sourceEdit.status,200);
+ const adminList=await request('/api/admin/products',{cookie:a});assert.equal(adminList.status,403,'Regular users must not browse the admin database');
+ const retailer=await request('/api/products');assert.equal(retailer.status,200);assert(retailer.data.some(x=>x.store==='Lidl'&&x.estimated===true),'Seeded Lidl estimates must be visible from SQL');
  const exportA=await request('/api/me/export',{cookie:a});assert.equal(exportA.status,200);assert(exportA.data.personal_diary.length>0);assert(exportA.data.showcase_diary.length>0);
  const exportB=await request('/api/me/export',{cookie:b});assert.equal(exportB.status,200);assert.equal(exportB.data.personal_diary.length,0);
  const forbidden=await request('/api/admin/products',{method:'POST',cookie:a,body:{name:'No',brand:'',store:'Other',calories:1,protein:0,fat:0,carbs:0,additives:'',ingredients:'',recommendation:'Neitrāls'}});assert.equal(forbidden.status,403);
