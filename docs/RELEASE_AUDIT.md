@@ -10,14 +10,14 @@
 - SQL export for shared catalog (admin) and personal account data (signed-in users).
 - 55 **illustrative** demo foods plus **60 retailer-associated catalog entries**: 20 Rimi and 20 Maxima with individual source links, plus 20 Lidl-category analogues with **estimated, unverified** nutrition. All Lidl estimates are visibly labeled ◷ Estimated · WIP, with an amber warning and category-reference link.
 - Partial EN/LV translation and mobile layout preview.
-- GitHub Actions CI for frontend build and backend syntax checks.
+- GitHub Actions CI for frontend build, backend syntax, catalog consistency, PostgreSQL migrations and authenticated API integration tests.
 
 ## Still required before presenting as production-ready
 1. **60 verified store SKUs:** 40 source-linked SKUs are prepared (20 Rimi and 20 Maxima); **20 Lidl entries are provisional approximations, not verified SKU nutrition**. Their values use typical nutrition for comparable foods; product names are category-level approximations, not proof of an exact package formulation. Data in `data/sourced-products.json` is auditable by direct source links; Confirm all package labels before claiming 60 verified items. Estimates should not be used for medically precise nutrition tracking.
-2. **Complete EN/LV localization:** most static UI copy and common status messages are now translated. Remaining backend-origin error variants and edge-case dynamic notifications still require bilingual QA.
+2. **Complete EN/LV localization:** static UI and explicit backend error strings have Latvian equivalents; edge-case dynamic notifications still require bilingual browser QA.
 3. **Cross-device guest migration:** old browser-local custom products, diary and collections are not automatically migrated into an account.
 4. **Production auth hardening:** persistent/distributed rate limiter, CSRF protections, password reset and email verification; current in-memory throttling is suitable only for a single-instance demo.
-5. **Backend integration tests:** CI checks TypeScript compilation and JS syntax, but does not provision PostgreSQL or run end-to-end tests.
+5. **Backend integration tests:** CI now provisions PostgreSQL and executes multi-account API checks for auth, diary, collections, export and access control. Browser-level E2E tests and load tests are still pending.
 6. **Admin verification quality:** manual review currently requires a source URL, but a URL alone does not guarantee correctness; reviewers must actually check labels. Add change history and evidence capture before public use.
 7. **React Native mobile app:** responsive web/mobile preview exists; there is no native app.
 8. **Automated Python ingestion:** data collection/verification pipeline not implemented.
