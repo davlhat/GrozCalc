@@ -135,3 +135,5 @@
  .app .cards,.mobile-preview .cards{grid-template-columns:1fr}
  .app .quickstats,.mobile-preview .quickstats{grid-template-columns:1fr}
 }
+
+.user-product-hint{display:grid;gap:6px;background:#eaf8f0;border:1px solid #c8e8d7;color:#336b55;border-radius:12px;padding:14px 16px;margin:15px 0;font-size:12px;line-height:1.6}.user-product-hint strong{color:#205640;font-size:13px}.admin-controls{min-width:0;overflow-wrap:anywhere}.admin-controls input{max-width:100%;min-width:0}.line .soft,.line .danger{flex:0 0 auto}
