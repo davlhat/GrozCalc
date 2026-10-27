@@ -57,3 +57,25 @@ CREATE TABLE IF NOT EXISTS app_sessions (
  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS app_sessions_expires_at_idx ON app_sessions(expires_at);
+
+CREATE TABLE IF NOT EXISTS user_settings (
+ user_id UUID PRIMARY KEY REFERENCES app_users(id) ON DELETE CASCADE,
+ calories INTEGER NOT NULL DEFAULT 2700 CHECK(calories BETWEEN 1 AND 20000),
+ protein INTEGER NOT NULL DEFAULT 160 CHECK(protein BETWEEN 0 AND 2000),
+ fat INTEGER NOT NULL DEFAULT 90 CHECK(fat BETWEEN 0 AND 2000),
+ carbs INTEGER NOT NULL DEFAULT 310 CHECK(carbs BETWEEN 0 AND 2000),
+ updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS user_custom_products (
+ id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+ user_id UUID NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+ name TEXT NOT NULL,
+ brand TEXT NOT NULL DEFAULT '',
+ store TEXT NOT NULL DEFAULT 'Other' CHECK(store IN ('Rimi','Maxima','Lidl','Other')),
+ calories NUMERIC(10,2) NOT NULL CHECK(calories>=0),
+ protein NUMERIC(10,2) NOT NULL CHECK(protein>=0),
+ fat NUMERIC(10,2) NOT NULL CHECK(fat>=0),
+ carbs NUMERIC(10,2) NOT NULL CHECK(carbs>=0),
+ additives TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS user_custom_products_user_idx ON user_custom_products(user_id);
