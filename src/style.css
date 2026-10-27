@@ -14,3 +14,6 @@
 .store.shop-rimi{background:#ffe6e6;color:#ce3139}.store.shop-maxima{background:#e1edff;color:#205db7}.store.shop-lidl{background:#fff3b5;color:#214ca6;border:1px solid #f4d447}.store.shop-other{background:#ecedf4;color:#68708b}
 .analytic-row{display:grid;grid-template-columns:110px 1fr 85px;align-items:center;gap:15px;padding:17px 0;border-bottom:1px solid #e2eee6;font-size:12px}.analytic-row b{text-align:right}.analytic-row .track{height:11px}
 @media(max-width:700px){.analytic-row{grid-template-columns:78px 1fr 65px;gap:8px;font-size:10px}}
+
+/* Catalog recommendation badges and accessible filtering */
+.filter{flex-wrap:wrap;align-items:center}.favorite-filter{display:inline-flex;align-items:center;gap:6px;color:#457d6b;font-size:12px;font-weight:700;white-space:nowrap}.favorite-filter input{width:16px;height:16px;accent-color:#1daa85}.quality-badge{display:inline-flex;align-items:center;padding:6px 10px;border-radius:8px;font-size:10px;font-weight:800;margin:2px 0 12px}.quality-good{color:#127957;background:#ddf8e8}.quality-neutral{color:#596c80;background:#eaf1f6}.quality-bad{color:#a45038;background:#fff0e5}.catalog-note{font-size:11px;color:#668e80;margin:12px 0 17px}.catalog-note .soft{padding:6px 9px}
