@@ -18,3 +18,13 @@ export async function updateDiary(id:number,grams:number):Promise<SqlDiaryEntry>
 export async function removeDiary(id:number):Promise<void>{await diaryRequest('/api/diary/'+id,{method:'DELETE'})}
 export async function fetchList(kind:'favorite'|'blacklist'):Promise<number[]>{return diaryRequest('/api/lists/'+kind)}
 export async function setListItem(kind:'favorite'|'blacklist',id:number,enabled:boolean):Promise<void>{await diaryRequest('/api/lists/'+kind+'/'+id,{method:enabled?'PUT':'DELETE'})}
+
+/** Local-development image upload; requires the same admin key as product creation. */
+export async function uploadCatalogImage(file:File,key:string):Promise<string>{
+ if(!['image/png','image/jpeg','image/webp'].includes(file.type))throw new Error('Select a PNG, JPEG or WebP image');
+ if(file.size>3*1024*1024)throw new Error('Image must be smaller than 3 MB');
+ const r=await fetch(API+'/api/admin/upload',{method:'POST',headers:{'x-admin-key':key,'Content-Type':file.type},body:file});
+ const body=await r.json().catch(()=>({}));
+ if(!r.ok)throw new Error(body.error||'Image upload failed ('+r.status+')');
+ return new URL(body.image_url,API).href;
+}
