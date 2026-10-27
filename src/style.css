@@ -98,3 +98,40 @@
 /* Distinct provenance treatment for unverified, approximate Lidl entries. */
 .estimate-badge{display:inline-block;background:#fff0ca;color:#794700;border:1px solid #d49b33;border-radius:999px;padding:4px 9px;margin-right:7px;font-weight:800;font-size:.77rem;letter-spacing:.01em}
 .estimate-explanation{padding:10px 12px;border-left:4px solid #d49b33;background:#fff8e7;color:#674513;font-size:.83rem;line-height:1.5;border-radius:4px;margin:9px 0}
+
+/* Mobile navigation and layout: no clipped controls or overlapping page headings. */
+@media(max-width:740px){
+ html,body,#root{width:100%;max-width:100%;overflow-x:hidden}
+ .app,.mobile-preview{display:block;width:100%;max-width:100%;min-width:0}
+ .app aside,.mobile-preview aside{position:relative;width:100%;max-width:100%;padding:12px;display:flex;flex-wrap:nowrap;align-items:center;gap:6px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;min-height:74px}
+ .app aside .logo,.mobile-preview aside .logo{flex:0 0 auto;font-size:16px;margin:0 6px 0 0}
+ .app aside .account-link,.mobile-preview aside .account-link{flex:0 0 auto;width:40px;max-width:40px;min-width:40px;height:40px;font-size:0;overflow:hidden;padding:0;display:grid;place-items:center}
+ .app aside .account-link::first-letter,.mobile-preview aside .account-link::first-letter{font-size:16px}
+ .app aside .nav,.mobile-preview aside .nav{flex:0 0 42px;min-width:42px;width:42px;height:42px;padding:9px;justify-content:center;font-size:0;overflow:hidden}
+ .app aside .nav-icon,.mobile-preview aside .nav-icon{width:22px;min-width:22px;display:grid;place-items:center}
+ .app aside .nav-caption,.app aside .sidebar-bottom,.mobile-preview aside .nav-caption,.mobile-preview aside .sidebar-bottom{display:none}
+ .app .right,.mobile-preview .right{min-width:0;width:100%;max-width:100%}
+ .app header,.mobile-preview header{height:auto;min-height:68px;padding:10px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:center}
+ .app header>span:first-child,.mobile-preview header>span:first-child{min-width:0;overflow-wrap:anywhere;font-size:11px}
+ .app header .header-actions,.mobile-preview header .header-actions{display:flex;gap:6px;align-items:center;justify-content:flex-end;min-width:0}
+ .app header .header-actions button,.mobile-preview header .header-actions button{font-size:11px;padding:8px}
+ .app header .status,.mobile-preview header .status{grid-column:1/-1;min-width:0;white-space:normal;overflow-wrap:anywhere;font-size:10px}
+ .app main,.mobile-preview main{padding:20px 12px;min-width:0}
+ .app .heading,.mobile-preview .heading{display:flex;flex-wrap:wrap;align-items:flex-start;gap:12px;margin-bottom:20px}
+ .app .heading>div,.mobile-preview .heading>div{flex:1 1 100%;min-width:0}
+ .app .heading h1,.mobile-preview .heading h1{font-size:clamp(24px,7vw,32px);overflow-wrap:anywhere}
+ .app .date,.mobile-preview .date{margin-top:0;max-width:100%}
+ .app .glass,.mobile-preview .glass{padding:18px 14px;min-width:0;max-width:100%}
+ .app .shortcut,.mobile-preview .shortcut{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center}
+ .app .shortcut>div,.mobile-preview .shortcut>div{min-width:0}
+ .app .shortcut .primary,.mobile-preview .shortcut .primary{grid-column:1/-1;white-space:normal;width:100%}
+ .app .form,.mobile-preview .form{grid-template-columns:1fr}
+ .app .form button,.mobile-preview .form button{grid-column:1}
+ .app .line,.mobile-preview .line{flex-wrap:wrap;min-width:0}
+ .app .line>div,.mobile-preview .line>div{min-width:0;overflow-wrap:anywhere}
+ .app .logline,.mobile-preview .logline{grid-template-columns:minmax(0,1fr) 70px 65px 34px;gap:5px;font-size:11px}
+ .app .logline input,.mobile-preview .logline input{width:100%;padding:7px}
+ .app .filter,.mobile-preview .filter{flex-wrap:wrap}
+ .app .cards,.mobile-preview .cards{grid-template-columns:1fr}
+ .app .quickstats,.mobile-preview .quickstats{grid-template-columns:1fr}
+}
