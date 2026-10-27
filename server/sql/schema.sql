@@ -100,3 +100,13 @@ CREATE TABLE IF NOT EXISTS account_product_lists (
  PRIMARY KEY(user_id,source,product_id,kind)
 );
 CREATE INDEX IF NOT EXISTS account_product_lists_kind_idx ON account_product_lists(user_id,kind);
+
+-- Signed-in diary entries for built-in demo and source-linked showcase foods.
+CREATE TABLE IF NOT EXISTS account_showcase_diary (
+ id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+ user_id UUID NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+ showcase_id BIGINT NOT NULL CHECK(showcase_id>0 AND showcase_id<1000000000),
+ entry_date DATE NOT NULL,
+ grams NUMERIC(10,2) NOT NULL CHECK(grams>0)
+);
+CREATE INDEX IF NOT EXISTS showcase_diary_user_date_idx ON account_showcase_diary(user_id,entry_date);
