@@ -62,3 +62,20 @@ export async function deletePersonalProduct(id:number):Promise<void>{
  const r=await fetch(API+'/api/me/products/'+id,{method:'DELETE',credentials:'include'});
  if(!r.ok)throw new Error('Unable to delete personal product ('+r.status+')');
 }
+
+export type PersonalDiaryEntry={id:string;product_id:string;entry_date:string;grams:string};
+async function accountRequest<T>(path:string,init?:RequestInit):Promise<T>{
+ const r=await fetch(API+path,{credentials:'include',...init,headers:{...(init?.body?{'Content-Type':'application/json'}:{}),...init?.headers}});
+ if(r.status===204)return undefined as T;
+ const body=await r.json().catch(()=>({}));
+ if(!r.ok)throw new Error(body.error||'Account request failed ('+r.status+')');
+ return body as T;
+}
+export const getPersonalDiary=()=>accountRequest<PersonalDiaryEntry[]>('/api/me/diary');
+export const addPersonalDiary=(product_id:number,entry_date:string,grams:number)=>accountRequest<PersonalDiaryEntry>('/api/me/diary',{method:'POST',body:JSON.stringify({product_id,entry_date,grams})});
+export const editPersonalDiary=(id:number,grams:number)=>accountRequest<PersonalDiaryEntry>('/api/me/diary/'+id,{method:'PATCH',body:JSON.stringify({grams})});
+export const removePersonalDiary=(id:number)=>accountRequest<void>('/api/me/diary/'+id,{method:'DELETE'});
+export type SavedPreset=NutritionGoals&{id:number;name:string};
+export const getSavedPresets=()=>accountRequest<SavedPreset[]>('/api/me/presets');
+export const createSavedPreset=(preset:Omit<SavedPreset,'id'>)=>accountRequest<SavedPreset>('/api/me/presets',{method:'POST',body:JSON.stringify(preset)});
+export const removeSavedPreset=(id:number)=>accountRequest<void>('/api/me/presets/'+id,{method:'DELETE'});
