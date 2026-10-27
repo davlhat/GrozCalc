@@ -1,5 +1,5 @@
 const API=import.meta.env.VITE_API_URL||'http://localhost:3001';
-export type ServerProduct={id:string;name:string;brand:string;store:string;calories:string;protein:string;fat:string;carbs:string;additives:string;recommendation:string;image_url:string|null;source_url?:string|null;verified?:boolean};
+export type ServerProduct={id:string;name:string;brand:string;store:string;calories:string;protein:string;fat:string;carbs:string;additives:string;recommendation:string;image_url:string|null;source_url?:string|null;verified?:boolean;estimated?:boolean;estimate_basis?:string|null;catalog_key?:string|null};
 export async function fetchProducts():Promise<ServerProduct[]>{const r=await fetch(API+'/api/products',{credentials:'include'});if(!r.ok)throw new Error('Unable to load product catalog');return r.json()}
 export async function healthcheck():Promise<boolean>{try{const r=await fetch(API+'/health');return r.ok}catch{return false}}
 
@@ -92,7 +92,7 @@ export async function browseAdminProducts(search='',store='',page=1):Promise<{pr
  return body;
 }
 
-export async function updateCatalogProduct(id:number,changes:Partial<ProductInput>&{verified?:boolean},key=''):Promise<ServerProduct>{
+export async function updateCatalogProduct(id:number,changes:Partial<ProductInput>&{verified?:boolean;estimated?:boolean;estimate_basis?:string|null},key=''):Promise<ServerProduct>{
  const r=await fetch(API+'/api/admin/products/'+id,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json','x-admin-key':key},body:JSON.stringify(changes)});
  const body=await r.json().catch(()=>({}));
  if(!r.ok)throw new Error(body.error||'Product update failed ('+r.status+')');
