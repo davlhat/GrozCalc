@@ -19,3 +19,13 @@
 .filter{flex-wrap:wrap;align-items:center}.favorite-filter{display:inline-flex;align-items:center;gap:6px;color:#457d6b;font-size:12px;font-weight:700;white-space:nowrap}.favorite-filter input{width:16px;height:16px;accent-color:#1daa85}.quality-badge{display:inline-flex;align-items:center;padding:6px 10px;border-radius:8px;font-size:10px;font-weight:800;margin:2px 0 12px}.quality-good{color:#127957;background:#ddf8e8}.quality-neutral{color:#596c80;background:#eaf1f6}.quality-bad{color:#a45038;background:#fff0e5}.catalog-note{font-size:11px;color:#668e80;margin:12px 0 17px}.catalog-note .soft{padding:6px 9px}
 
 .admin-controls{display:flex;align-items:end;flex-wrap:wrap;gap:12px;padding:18px;margin-top:24px;background:#eaf8f1;border:1px solid #d2ebdd;border-radius:13px}.admin-controls label{flex:1;min-width:220px;font-size:10px;font-weight:800;color:#477c68;letter-spacing:.6px}.admin-controls input{display:block;width:100%;margin-top:8px;background:#fff;border:1px solid #cbe6d8;border-radius:9px;padding:11px}.admin-controls p{width:100%;margin:0;color:#527c6d}
+
+/* Unified mint-glass icon treatment for the sidebar and the brand */
+.nav-icon{display:inline-grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:11px;color:#36977a;background:linear-gradient(145deg,#f8fffc,#d9f2e7);border:1px solid #ffffffeb;box-shadow:inset 1px 2px 3px #fff,0 3px 8px #2d957414}
+.nav-icon svg{display:block;filter:drop-shadow(0 1px 0 #fff)}
+.nav.on .nav-icon{background:linear-gradient(145deg,#e4fff1,#a8e6cc);color:#137c60;box-shadow:inset 1px 2px 4px #fff,0 5px 12px #29a17b23}
+.nav:hover .nav-icon{border-color:#c0e9d6;color:#188c6a}
+.logo .glass-icon-logo{background:linear-gradient(145deg,#f2fff9,#a9e4cf);color:#277d66;border-color:#fff;box-shadow:inset 2px 3px 5px #fff,0 6px 15px #249d7930}
+.logo .glass-icon-logo svg{width:94%;height:94%;filter:drop-shadow(0 1px 1px #ffffffc0)}
+.glass-icon{color:#318f77;background:linear-gradient(145deg,#f6fff9 0%,#c4efdc 50%,#7fcdb2 100%);box-shadow:inset 2px 3px 6px #fff,inset -3px -4px 8px #5ea98a47,0 7px 18px #398f7121}
+@media(max-width:700px){.nav-icon{flex-basis:34px}.logo .glass-icon-logo{width:38px!important;height:38px!important}}
