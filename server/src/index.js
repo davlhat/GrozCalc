@@ -116,6 +116,21 @@ app.get('/health',(_,res)=>res.json({ok:true}));
 app.get('/api/products',wrap(async(req,res)=>{const search=String(req.query.search||'').slice(0,100),store=String(req.query.store||'');const r=await pool.query("SELECT * FROM products WHERE (name ILIKE $1 OR brand ILIKE $1) AND ($2='' OR store=$2) ORDER BY name LIMIT 250",['%'+search+'%',store]);res.json(r.rows)}));
 app.post('/api/admin/products',admin,wrap(async(req,res)=>{const p=product.parse(req.body);const cols=Object.keys(p),vals=Object.values(p);const r=await pool.query('INSERT INTO products ('+cols.join(',')+') VALUES ('+cols.map((_,i)=>'$'+(i+1)).join(',')+') RETURNING *',vals);res.status(201).json(r.rows[0])}));
 
+
+app.post('/api/admin/products/import',admin,wrap(async(req,res)=>{
+ const items=z.array(product.extend({source_url:z.string().url()})).min(1).max(100).parse(req.body);
+ const client=await pool.connect();
+ try{
+  await client.query('BEGIN');
+  const rows=[];
+  for(const p of items){
+   const cols=Object.keys(p),vals=Object.values(p);
+   const r=await client.query('INSERT INTO products ('+cols.join(',')+') VALUES ('+cols.map((_,i)=>'$'+(i+1)).join(',')+') RETURNING id,name,store,verified',vals);
+   rows.push(r.rows[0]);
+  }
+  await client.query('COMMIT');res.status(201).json({inserted:rows.length,products:rows});
+ }catch(e){await client.query('ROLLBACK');throw e}finally{client.release()}
+}));
 app.patch('/api/admin/products/:id',admin,wrap(async(req,res)=>{
  const id=z.coerce.number().int().positive().parse(req.params.id);
  const update=product.partial().extend({verified:z.boolean().optional()}).strict().parse(req.body);
