@@ -94,3 +94,7 @@
 .product-source-link{display:inline-flex;align-items:center;gap:.3rem;margin:.25rem 0 .35rem;color:#235f84;font-size:.78rem;font-weight:650;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
 .product-source-link:hover,.product-source-link:focus-visible{color:#174466}
 .product-source-link:focus-visible{outline:2px solid #174466;outline-offset:3px}
+
+/* Distinct provenance treatment for unverified, approximate Lidl entries. */
+.estimate-badge{display:inline-block;background:#fff0ca;color:#794700;border:1px solid #d49b33;border-radius:999px;padding:4px 9px;margin-right:7px;font-weight:800;font-size:.77rem;letter-spacing:.01em}
+.estimate-explanation{padding:10px 12px;border-left:4px solid #d49b33;background:#fff8e7;color:#674513;font-size:.83rem;line-height:1.5;border-radius:4px;margin:9px 0}
