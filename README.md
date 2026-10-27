@@ -6,59 +6,84 @@
 
 ## Projekta mērķis
 
-GrozCalc ir uztura un kaloriju uzskaites sistēma, kas palīdz lietotājiem atrast pārtikas produktus vietējos veikalos, reģistrēt patērēto daudzumu, aprēķināt kalorijas un makroelementus, kā arī sekot individuālajiem mērķiem.
+GrozCalc ir uztura uzskaites tīmekļa prototips, kas palīdz atrast pārtikas produktus Latvijas veikalos, reģistrēt patērēto daudzumu, aprēķināt kalorijas un makroelementus, pārvaldīt izlasi un melno sarakstu, kā arī sekot individuāliem mērķiem.
 
-## Prasību specifikācija
+## Realizētās tehnoloģijas
 
-Atbilstoši projekta dokumentācijai sistēmai paredzētas divas lomas — **lietotājs** un **administrators**. Galvenās prasības: produktu meklēšana pēc nosaukuma, zīmola vai veikala; dienas uzskaite; dienas un nedēļas pārskati; produktu melnais saraksts; administratora produktu ievade un rediģēšana; kvalitātes zīmogi (**Ļoti ieteicams / Neitrāls / Neieteicams**); nākotnē produktu un cenu sinhronizācija.
+- **Tīmekļa saskarne:** React, TypeScript, Vite, CSS un pašveidotas SVG ikonas.
+- **Serveris:** Node.js, Express, Zod ievades validācija.
+- **Datubāze:** PostgreSQL 16 (SQL tabulas, atslēgas, saites, indeksēšana).
+- **Autentifikācija:** reģistrācija un pierakstīšanās, scrypt ar sāli, servera sesijas un HttpOnly sīkdatnes.
+- **Piekļuves kontrole:** lietotājs / administrators; kontam piesaistīti dati.
+- **Valodas:** latviešu un angļu saskarnes pārslēgšana (atsevišķi kļūdu un stūra gadījumi vēl jāpārbauda).
+- **Pārbaudes:** TypeScript/Vite būve, JavaScript sintakses pārbaudes, katalogu datu pārbaude un PostgreSQL API integrācijas tests GitHub Actions vidē.
 
-Dokumentācijā paredzēta tīmekļa un mobilā versija, latviešu/angļu saskarne, SQL datubāze, piekļuves kontrole un droša autentifikācija.
+Projekta sākotnējā specifikācijā paredzēts arī React Native, Python datu iegūšana, OAuth/Firebase un mākoņhostings. **Šīs daļas nav realizētas šajā tīmekļa prototipā**; pašreizējā autentifikācija izmanto servera sesijas, nevis OAuth.
 
-## Dokumentācijā norādītās tehnoloģijas
+## Funkcionalitāte
 
-- Frontend: React Native
-- Backend: Node.js
-- Datubāze: SQL
-- Datu iegūšana: Python
-- Autentifikācija: OAuth 2.0 / Firebase Auth
-- Hostings: Google Cloud
+1. **Produktu katalogs:** meklēšana, veikalu filtrs (Rimi, Maxima, Lidl), uzturvērtība uz 100 g, uztura ieteikumu etiķetes un informācija par datu izcelsmi.
+2. **Dienasgrāmata:** produkta pievienošana, gramu maiņa, dzēšana, dienas kaloriju un makroelementu aprēķins.
+3. **Konts:** reģistrācija, pierakstīšanās, kontam piesaistīti individuāli produkti, dienasgrāmata, izlase, melnais saraksts, mērķi un saglabāti iestatījumi.
+4. **Analītika:** dienas un pēdējo septiņu dienu uztura pārskats.
+5. **Administrators:** kopīgā SQL kataloga produktu izveide, dzēšana, attēlu augšupielāde, avotu pārskatīšana, JSON imports un eksports.
+6. **Datu eksports:** autentificēta lietotāja datu lejupielāde JSON formātā.
 
-**Prototipa pašreizējā realizācija atšķiras:** tīmekļa frontend izmanto React + TypeScript + Vite, bez backend. Iepriekš apsvērtā FastAPI izvēle nav dokumentācijā norādītais Node.js backend; pirms backend realizācijas šī atšķirība jāsaskaņo ar komandu.
+### Datu uzticamība
 
-## Pašreizējais prototips (izstrādes stadijā)
+- **55 demonstrācijas produkti:** ilustratīvas uzturvērtības, nav apstiprinātas konkrētu veikalu preces.
+- **20 Rimi un 20 Maxima ieraksti:** individuālas produktu saites un uzturvērtības, taču etiķešu neatkarīga gala pārbaude vēl ir nepieciešama. Avota saite **nenozīmē** pārbaudītu vērtību.
+- **20 Lidl ieraksti:** pēc līdzīgu produktu kategorijām **aplēstas, nepārbaudītas** uzturvērtības. Saskarnē marķētas ar **◷ Aplēse · izstrādē / Estimated · WIP**, dzintarkrāsas brīdinājumu un kategorijas atsauci. Šie dati nav precīzs konkrēta Lidl iepakojuma uzturvērtības apgalvojums.
 
-- Stikla stila adaptīva tīmekļa saskarne, ģeometriskas SVG ikonas.
-- Produktu katalogs, veikalu filtrēšana un uzturvērtības aprēķini.
-- Dienas uztura uzskaite, maināms produktu daudzums un dienas mērķi.
-- Lietotāja izveidoti produkti, favorīti un melnais saraksts.
-- Septiņu dienu kaloriju pārskats un makroelementu mērķu rediģēšana.
-- Administratora produktu pārvaldības **demonstrācijas saskarne**.
+**Nedrīkst prezentēt visus 60 ierakstus kā verificētus.** Precīzai uztura uzskaitei jāpārbauda produkta etiķete.
 
-**Ierobežojumi:** šobrīd dati glabājas tikai pārlūkprogrammas `localStorage`; nav SQL datubāzes, lietotāju autorizācijas vai servera līmeņa administratora tiesību. Sākotnējie produkti ir ilustratīvi, nevis pārbaudīti veikalu dati. Šis vēl nav pilnībā pabeigts kursa prototips.
+## Lokālā palaišana
 
-## Palaišana
-
-Nepieciešams Node.js 20+.
+Nepieciešams Node.js 22+, Docker Desktop vai PostgreSQL 16.
 
 ```bash
 git clone -b dev/initial-prototype https://github.com/davlhat/GrozCalc.git
 cd GrozCalc
 npm install
+cd server
+npm install
+```
+
+Izveidojiet `server/.env` pēc `server/.env.example` parauga un palaidiet PostgreSQL (skat. `docker-compose.yml`). Tad:
+
+```bash
+cd server
+npm run db
 npm run dev
 ```
 
-Atveriet terminālī norādīto lokālo adresi. Ražošanas būvei: `npm run build`.
+Atsevišķā terminālī no projekta saknes:
 
-Detalizētas instrukcijas: [docs/TEAM_SETUP.md](docs/TEAM_SETUP.md).
+```bash
+npm run dev -- --host localhost --port 5173 --strictPort
+```
 
-## Turpmākie uzdevumi
+**Svarīgi:** palaidiet tikai **vienu** backend procesu portā `3001`; atkārtota palaišana izraisa `EADDRINUSE`.
 
-1. SQL datubāze un dokumentācijai atbilstošs backend.
-2. Autentifikācija, lomas un administratora piekļuves kontrole.
-3. Produktu datu verifikācija un datu imports/eksports.
-4. Pilna LV/EN lokalizācija, mobilā versija un testi.
+## Vienreizēja pārbaude pirms prezentācijas
 
-## Avoti
+```bash
+node scripts/check-products.mjs
+npm run build
+cd server
+npm run db
+```
+
+Automatizēto API integrācijas testu `node scripts/integration.mjs` palaidiet **tikai atsevišķā testu datubāzē** (tests izveido lietotājus un ierakstus). CI vidē PostgreSQL serviss tiek izveidots automātiski.
+
+## Dokumentācija
+
+- [Universitātes demonstrācijas scenārijs un pieņemšanas pārbaude](docs/DEMO_AND_TEST_PLAN.md)
+- [Realizācijas audits un atlikušās prasības](docs/RELEASE_AUDIT.md)
+- [Komandas lokālās palaišanas instrukcijas](docs/TEAM_SETUP.md)
+- [Backend un datubāzes apraksts](server/README.md)
+
+## Atsauces uz prasību dokumentāciju
 
 - *GrozCalc — Sistēmas prasību specifikācija* (2026).
 - *GrozCalc — Sistēmas projektējums* (2026).
