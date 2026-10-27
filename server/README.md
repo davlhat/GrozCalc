@@ -33,15 +33,18 @@ Only run that query for an account you control; do not make admin promotion publ
 
 ## Account-specific nutrition goals (new)
 After pulling the latest changes, run `npm run db` to create `user_settings` and `user_custom_products`, then restart the backend. In the Goals page, select or edit a target and click **Save goals to account**. On your next sign-in, stored goals are loaded from PostgreSQL. Existing local targets are not silently overwritten until an account has saved goals.
-The `/api/me/products` authenticated endpoints are implemented for future account-specific custom product syncing, but the existing **My products** interface is still browser-local; do not treat it as synchronized yet.
+The **My products** interface uses account-scoped PostgreSQL records for signed-in users. Guest-created foods remain browser-local.
 The Product manager UI requires an account with the admin role. For local setup, promote your registered account in PostgreSQL as documented above, then sign out and sign back in. Do not expose the legacy development API key in a production client.
 
 ## Personal products (account sync)
 Run `npm run db` after updating to create `user_custom_products`. When signed in, the **My products** form now creates account-owned SQL products, and those products are listed in the catalog and on the My products page. Deletion uses the authenticated account ID. Guest-created products remain in browser localStorage and are not automatically imported into an account.
-**Current limitation:** Diary entries for these custom products are browser-local because `diary_entries.product_id` currently references only the shared `products` table. Do not present this as complete multi-device diary sync. A future migration should model both product sources explicitly before enabling SQL diary writes for account-owned foods.
-The EN/LV toggle translates navigation and some account, goals, and custom product headings; complete localization is still in progress.
+Signed-in diary entries for personal foods are stored in `personal_diary_entries`; shared SQL products use `diary_entries`, and illustrative/source-linked showcase foods use `account_showcase_diary`. All three are account-scoped. Guest diary entries remain local.
+The EN/LV toggle covers most UI strings and explicit API errors; final browser-level localization QA is still required.
 
 ## Batch: account diary and presets
 Run `npm run db` after pulling. `personal_diary_entries` stores diary entries referencing account-owned foods; all read/write/delete routes require a valid session and verify ownership. Shared catalog diary entries remain in the existing SQL diary table. Custom goal presets are now saved in the existing `goal_presets` table per account, and built-in presets remain undeletable.
 For signed-in users, guest browser diary entries are hidden rather than mixed into account totals. Guest entries are not deleted or automatically migrated. This separation prevents a previous local profile's food diary from appearing as another account's records.
 Test: sign in, create a personal product, add it to the diary, edit its grams, refresh, then delete it; create/delete a personal goal preset and refresh. Product deletion cascades to that product's personal diary entries. No nutrition claims are automatically marked verified.
+
+## Release candidate checks
+The GitHub Actions workflow provisions PostgreSQL 16, runs schema initialization, compiles the React frontend, validates the 60 retailer-associated entries, and runs `scripts/integration.mjs` against a clean CI database. The integration test verifies authentication, account isolation, personal food CRUD, diary and collection persistence, export, administrator authorization, and request-origin protection. See `docs/DEMO_AND_TEST_PLAN.md` for the consolidated university demonstration script.
