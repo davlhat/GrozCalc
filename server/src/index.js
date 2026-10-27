@@ -18,9 +18,19 @@ function cookie(req){const raw=req.get('cookie')||'';return raw.split(';').map(x
 function setSessionCookie(res,token,maxAge){res.setHeader('Set-Cookie',cookieName+'='+token+'; HttpOnly; SameSite=Lax; Path=/; Max-Age='+maxAge+(process.env.NODE_ENV==='production'?'; Secure':''))}
 async function sessionUser(req){const token=cookie(req);if(!/^[a-f0-9]{64}$/.test(token))return null;const r=await pool.query('SELECT u.id,u.email,u.role FROM app_sessions s JOIN app_users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>now()',[tokenHash(token)]);return r.rows[0]||null}
 async function issueSession(res,user){const token=randomBytes(32).toString('hex'),ttl=60*60*24*7;await pool.query("INSERT INTO app_sessions(token_hash,user_id,expires_at) VALUES($1,$2,now()+interval '7 days')",[tokenHash(token),user.id]);setSessionCookie(res,token,ttl);return {id:user.id,email:user.email,role:user.role}}
+// Basic in-memory login throttling for the single-instance university prototype.
+const authAttempts=new Map();
+function authThrottle(req,res,next){
+ const key=String(req.ip||'unknown').slice(0,100),now=Date.now();
+ const recent=(authAttempts.get(key)||[]).filter(t=>now-t<15*60*1000);
+ if(recent.length>=15){res.setHeader('Retry-After','900');return res.status(429).json({error:'Too many authentication attempts. Try again later.'})}
+ recent.push(now);authAttempts.set(key,recent);
+ if(authAttempts.size>10000){for(const [k,v] of authAttempts){if(v.every(t=>now-t>=15*60*1000))authAttempts.delete(k)}}
+ next();
+}
 const credentials=z.object({email:z.string().trim().email().max(254).transform(x=>x.toLowerCase()),password:z.string().min(10).max(128)});
-app.post('/api/auth/register',wrap(async(req,res)=>{const c=credentials.parse(req.body);const hash=await passwordHash(c.password);const role='user';try{const r=await pool.query('INSERT INTO app_users(id,email,password_hash,role) VALUES($1,$2,$3,$4) RETURNING id,email,role',[randomUUID(),c.email,hash,role]);res.status(201).json(await issueSession(res,r.rows[0]))}catch(e){if(e.code==='23505')return res.status(409).json({error:'Account already exists'});throw e}}));
-app.post('/api/auth/login',wrap(async(req,res)=>{const c=credentials.parse(req.body);const r=await pool.query('SELECT id,email,role,password_hash FROM app_users WHERE email=$1',[c.email]);if(!r.rowCount||!await passwordMatches(c.password,r.rows[0].password_hash))return res.status(401).json({error:'Invalid email or password'});res.json(await issueSession(res,r.rows[0]))}));
+app.post('/api/auth/register',authThrottle,wrap(async(req,res)=>{const c=credentials.parse(req.body);const hash=await passwordHash(c.password);const role='user';try{const r=await pool.query('INSERT INTO app_users(id,email,password_hash,role) VALUES($1,$2,$3,$4) RETURNING id,email,role',[randomUUID(),c.email,hash,role]);res.status(201).json(await issueSession(res,r.rows[0]))}catch(e){if(e.code==='23505')return res.status(409).json({error:'Account already exists'});throw e}}));
+app.post('/api/auth/login',authThrottle,wrap(async(req,res)=>{const c=credentials.parse(req.body);const r=await pool.query('SELECT id,email,role,password_hash FROM app_users WHERE email=$1',[c.email]);if(!r.rowCount||!await passwordMatches(c.password,r.rows[0].password_hash))return res.status(401).json({error:'Invalid email or password'});res.json(await issueSession(res,r.rows[0]))}));
 app.get('/api/auth/me',wrap(async(req,res)=>res.json({user:await sessionUser(req)})));
 app.post('/api/auth/logout',wrap(async(req,res)=>{const token=cookie(req);if(token)await pool.query('DELETE FROM app_sessions WHERE token_hash=$1',[tokenHash(token)]);setSessionCookie(res,'',0);res.status(204).end()}));
 
