@@ -11,11 +11,11 @@ logo:<>
 <circle cx="14.6" cy="6.5" r=".6" fill="#257d68" stroke="none"/>
 <circle cx="17.3" cy="6.5" r=".6" fill="#257d68" stroke="none"/>
 <path d="M14.8 8.5q1.2 1.2 2.4 0" stroke="#257d68" strokeWidth=".8"/>
-<path d="M16 11v4m-1 0-3 4m4-4 4 3" stroke="#257d68" strokeWidth="1.5"/>
+<path d="M16 11v7m0-3-3.8 2.5m3.8-2.5 3.2 2.5m-3.2.5-3 4m3-4 3.5 3.5" stroke="#257d68" strokeWidth="1.6"/>
 <rect x="20" y="14" width="7.5" height="9" rx="1.3" fill="#e9fffa" stroke="#257d68" strokeWidth="1.3"/>
 <rect x="21.3" y="15.3" width="4.8" height="2" rx=".3" fill="#b2e7d4" stroke="none"/>
 <path d="M22 19.4h.7m2 0h.7m-3.4 1.9h.7m2 0h.7" stroke="#257d68" strokeWidth="1.2"/>
-<path d="M12 15q2-3 5-.4l2 2" stroke="#257d68" strokeWidth="1.4"/>
+<path d="M11 19h4" stroke="#257d68" strokeWidth="1.4"/>
 <path d="M18.5 17c-1.3-2.2-.1-4.6 2.3-4.6 2.7 0 3.9 3.2 1.9 5.3-1.4 1.4-3.1 1.3-4.2-.7" fill="#f5b56d" stroke="#b77436" strokeWidth="1"/>
 <path d="m22.6 13.1 2.3-2.3m-.1.1 1.5-.1m-1.5.1.1-1.5" stroke="#fff3dd" strokeWidth="2.1"/>
 </>,
