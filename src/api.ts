@@ -104,3 +104,9 @@ export async function importCatalogProducts(items:(ProductInput&{source_url:stri
  if(!r.ok)throw new Error(body.error||'Batch import failed ('+r.status+')');
  return body;
 }
+
+export type ShowcaseDiaryEntry={id:string;showcase_id:string;entry_date:string;grams:string};
+export const getShowcaseDiary=()=>accountRequest<ShowcaseDiaryEntry[]>('/api/me/showcase-diary');
+export const addShowcaseDiary=(showcase_id:number,entry_date:string,grams:number)=>accountRequest<ShowcaseDiaryEntry>('/api/me/showcase-diary',{method:'POST',body:JSON.stringify({showcase_id,entry_date,grams})});
+export const editShowcaseDiary=(id:number,grams:number)=>accountRequest<ShowcaseDiaryEntry>('/api/me/showcase-diary/'+id,{method:'PATCH',body:JSON.stringify({grams})});
+export const removeShowcaseDiary=(id:number)=>accountRequest<void>('/api/me/showcase-diary/'+id,{method:'DELETE'});
