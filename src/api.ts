@@ -97,3 +97,10 @@ export async function exportMyData():Promise<void>{
  const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');
  a.href=url;a.download='grozcalc-my-data.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
+
+export async function importCatalogProducts(items:(ProductInput&{source_url:string})[],key=''):Promise<{inserted:number}>{
+ const r=await fetch(API+'/api/admin/products/import',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json','x-admin-key':key},body:JSON.stringify(items)});
+ const body=await r.json().catch(()=>({}));
+ if(!r.ok)throw new Error(body.error||'Batch import failed ('+r.status+')');
+ return body;
+}
