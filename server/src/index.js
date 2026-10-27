@@ -1,9 +1,29 @@
+import {mkdir,writeFile} from 'node:fs/promises';
+import {randomUUID} from 'node:crypto';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import 'dotenv/config';
 import express from 'express';import cors from 'cors';import{Pool}from'pg';import{z}from'zod';
 const app=express(),pool=new Pool({connectionString:process.env.DATABASE_URL});app.use(cors({origin:process.env.CORS_ORIGIN||'http://localhost:5173'}));app.use(express.json({limit:'100kb'}));
 const product=z.object({name:z.string().trim().min(1).max(200),brand:z.string().default(''),store:z.enum(['Rimi','Maxima','Lidl','Other']),calories:z.number().nonnegative(),protein:z.number().nonnegative(),fat:z.number().nonnegative(),carbs:z.number().nonnegative(),additives:z.string().default(''),ingredients:z.string().default(''),image_url:z.string().url().nullable().optional(),recommendation:z.enum(['Neitrāls','Neieteicams','Ļoti ieteicams']).default('Neitrāls'),source_url:z.string().url().nullable().optional()});
 const wrap=fn=>(req,res,next)=>Promise.resolve(fn(req,res)).catch(next);
 function admin(req,res,next){if(!process.env.ADMIN_API_KEY||req.get('x-admin-key')!==process.env.ADMIN_API_KEY)return res.status(403).json({error:'Administrator key required'});next()}
+const uploadsDir=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../../uploads');
+app.use('/uploads',express.static(uploadsDir,{index:false,maxAge:'1d',setHeaders(res){res.setHeader('X-Content-Type-Options','nosniff')}}));
+app.post('/api/admin/upload',admin,express.raw({type:['image/png','image/jpeg','image/webp'],limit:'3mb'}),wrap(async(req,res)=>{
+ const data=req.body;
+ if(!Buffer.isBuffer(data)||data.length<16)return res.status(400).json({error:'Upload a PNG, JPEG, or WebP image (max 3 MB)'});
+ const png=data.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]));
+ const jpg=data[0]===255&&data[1]===216&&data[2]===255;
+ const webp=data.toString('ascii',0,4)==='RIFF'&&data.toString('ascii',8,12)==='WEBP';
+ const mime=req.get('content-type')?.split(';')[0];
+ const ext=png&&mime==='image/png'?'png':jpg&&mime==='image/jpeg'?'jpg':webp&&mime==='image/webp'?'webp':null;
+ if(!ext)return res.status(415).json({error:'Invalid image format or content type'});
+ await mkdir(uploadsDir,{recursive:true});
+ const name=randomUUID()+'.'+ext;
+ await writeFile(path.join(uploadsDir,name),data,{flag:'wx'});
+ res.status(201).json({image_url:'/uploads/'+name});
+}));
 app.get('/health',(_,res)=>res.json({ok:true}));
 app.get('/api/products',wrap(async(req,res)=>{const search=String(req.query.search||'').slice(0,100),store=String(req.query.store||'');const r=await pool.query("SELECT * FROM products WHERE (name ILIKE $1 OR brand ILIKE $1) AND ($2='' OR store=$2) ORDER BY name LIMIT 250",['%'+search+'%',store]);res.json(r.rows)}));
 app.post('/api/admin/products',admin,wrap(async(req,res)=>{const p=product.parse(req.body);const cols=Object.keys(p),vals=Object.values(p);const r=await pool.query('INSERT INTO products ('+cols.join(',')+') VALUES ('+cols.map((_,i)=>'$'+(i+1)).join(',')+') RETURNING *',vals);res.status(201).json(r.rows[0])}));
