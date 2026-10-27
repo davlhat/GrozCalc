@@ -90,3 +90,13 @@ CREATE TABLE IF NOT EXISTS personal_diary_entries (
 );
 CREATE INDEX IF NOT EXISTS personal_diary_user_date_idx ON personal_diary_entries(user_id,entry_date);
 CREATE INDEX IF NOT EXISTS goal_presets_user_idx ON goal_presets(user_id);
+
+-- Universal account collections: demo, shared SQL and personal SQL products.
+CREATE TABLE IF NOT EXISTS account_product_lists (
+ user_id UUID NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+ source TEXT NOT NULL CHECK(source IN ('demo','catalog','personal')),
+ product_id BIGINT NOT NULL CHECK(product_id>0),
+ kind TEXT NOT NULL CHECK(kind IN ('favorite','blacklist')),
+ PRIMARY KEY(user_id,source,product_id,kind)
+);
+CREATE INDEX IF NOT EXISTS account_product_lists_kind_idx ON account_product_lists(user_id,kind);
