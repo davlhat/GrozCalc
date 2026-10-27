@@ -1,0 +1,50 @@
+# GrozCalc SQL API — first backend milestone
+
+This is an **initial** Node.js/Express/PostgreSQL backend, not a completed production authentication system.
+
+1. Create a local PostgreSQL database named `grozcalc`.
+2. Copy `.env.example` to `.env` and set `DATABASE_URL` and a strong `ADMIN_API_KEY`.
+3. In `server/`: run `npm install`, `npm run db`, then `npm run dev`.
+4. GET `/health` and GET `/api/products` are public. Admin requests require header `x-admin-key`.
+5. POST `/api/admin/products` inserts products. DELETE `/api/admin/products/:id` removes products. GET `/api/admin/export` exports catalog JSON.
+
+**Security limitation:** API-key admin access is temporary for local development. Never expose the key in frontend code. Before deployment, replace it with authenticated sessions and role-based authorization, per project documentation.
+
+**Not yet connected:** The React UI still uses localStorage. The diary, favorites, blacklist and goal tables are schema groundwork; their API endpoints and identity checks are pending. No image-upload storage is implemented; products can reference externally hosted images by URL.
+
+## SQL diary and personal collections (local development)
+
+New endpoints: `GET/POST /api/diary`, `PATCH/DELETE /api/diary/:id`, `GET /api/lists/:kind`, `PUT/DELETE /api/lists/:kind/:productId` where kind is `favorite` or `blacklist`. All require an `x-dev-user-id` header. The React client generates a random browser-local identifier and reuses it across refreshes.
+
+**Critical security restriction:** This identifier is **not authentication** and can be spoofed. Do not expose these endpoints to the public internet or store sensitive personal information. Replace with real sessions and authenticated user IDs before any production use. This is only a local proof of SQL persistence. SQL products use database IDs; demo/custom products still use localStorage. Browser storage clearing loses the local identifier, making its SQL diary inaccessible from that browser without restoring the ID.
+
+After pulling backend changes, restart `npm run dev` in `server/` (Node watch may reload automatically). No additional migration is required for these existing tables.
+
+## Account login (development)
+Run `npm run db` after pulling to create `app_users` and `app_sessions` (existing data is retained).
+Restart the backend and frontend. Open **Account** in the sidebar, register with an email and password of at least 10 characters, then sign in.
+Passwords use per-user salted scrypt hashes; sessions are opaque HttpOnly cookies with seven-day expiration and database-backed revocation. API CORS must match the frontend origin exactly (`http://localhost:5173` by default).
+New accounts always have the **user** role. For local development, promote an account manually through PostgreSQL after registration, for example:
+```sql
+UPDATE app_users SET role='admin' WHERE email='your-actual-email@example.com';
+```
+Only run that query for an account you control; do not make admin promotion publicly accessible. Existing `ADMIN_API_KEY` support remains a **development-only** fallback and is disabled when `NODE_ENV=production`.
+**Deployment blockers:** authenticated accounts coexist with a legacy development user-ID fallback, and browser-local demo data is not migrated into the account. Before public deployment, remove development fallbacks, implement request rate limiting and password reset/email verification, and review cross-origin/session security and image hosting.
+
+## Account-specific nutrition goals (new)
+After pulling the latest changes, run `npm run db` to create `user_settings` and `user_custom_products`, then restart the backend. In the Goals page, select or edit a target and click **Save goals to account**. On your next sign-in, stored goals are loaded from PostgreSQL. Existing local targets are not silently overwritten until an account has saved goals.
+The **My products** interface uses account-scoped PostgreSQL records for signed-in users. Guest-created foods remain browser-local.
+The Product manager UI requires an account with the admin role. For local setup, promote your registered account in PostgreSQL as documented above, then sign out and sign back in. Do not expose the legacy development API key in a production client.
+
+## Personal products (account sync)
+Run `npm run db` after updating to create `user_custom_products`. When signed in, the **My products** form now creates account-owned SQL products, and those products are listed in the catalog and on the My products page. Deletion uses the authenticated account ID. Guest-created products remain in browser localStorage and are not automatically imported into an account.
+Signed-in diary entries for personal foods are stored in `personal_diary_entries`; shared SQL products use `diary_entries`, and illustrative/source-linked showcase foods use `account_showcase_diary`. All three are account-scoped. Guest diary entries remain local.
+The EN/LV toggle covers most UI strings and explicit API errors; final browser-level localization QA is still required.
+
+## Batch: account diary and presets
+Run `npm run db` after pulling. `personal_diary_entries` stores diary entries referencing account-owned foods; all read/write/delete routes require a valid session and verify ownership. Shared catalog diary entries remain in the existing SQL diary table. Custom goal presets are now saved in the existing `goal_presets` table per account, and built-in presets remain undeletable.
+For signed-in users, guest browser diary entries are hidden rather than mixed into account totals. Guest entries are not deleted or automatically migrated. This separation prevents a previous local profile's food diary from appearing as another account's records.
+Test: sign in, create a personal product, add it to the diary, edit its grams, refresh, then delete it; create/delete a personal goal preset and refresh. Product deletion cascades to that product's personal diary entries. No nutrition claims are automatically marked verified.
+
+## Release candidate checks
+The GitHub Actions workflow provisions PostgreSQL 16, runs schema initialization, compiles the React frontend, validates the 60 retailer-associated entries, and runs `scripts/integration.mjs` against a clean CI database. The integration test verifies authentication, account isolation, personal food CRUD, diary and collection persistence, export, administrator authorization, and request-origin protection. See `docs/DEMO_AND_TEST_PLAN.md` for the consolidated university demonstration script.

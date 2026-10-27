@@ -1,0 +1,46 @@
+import assert from 'node:assert/strict';
+import {spawn} from 'node:child_process';
+import {setTimeout as sleep} from 'node:timers/promises';
+const base='http://127.0.0.1:3001',server=spawn(process.execPath,['src/index.js'],{cwd:new URL('../server/',import.meta.url),env:{...process.env,PORT:'3001',CORS_ORIGIN:'http://localhost:5173'},stdio:'pipe'});
+let output='';server.stderr.on('data',b=>output+=b.toString());server.stdout.on('data',b=>output+=b.toString());
+async function request(path,{method='GET',body,cookie,origin='http://localhost:5173'}={}){const headers={origin};if(body!==undefined)headers['content-type']='application/json';if(cookie)headers.cookie=cookie;const response=await fetch(base+path,{method,headers,body:body===undefined?undefined:JSON.stringify(body)});return {status:response.status,headers:response.headers,data:await response.json().catch(()=>null)}}
+try{
+ let ready=false;for(let i=0;i<70;i++){try{const r=await fetch(base+'/health');if(r.ok){ready=true;break}}catch{}await sleep(150)}assert(ready,'Server did not start: '+output);
+ const tag=Date.now().toString(36),pass='TestPassphrase!123';
+ const signup=async n=>{const r=await request('/api/auth/register',{method:'POST',body:{email:'ci-'+tag+'-'+n+'@example.test',password:pass}});assert.equal(r.status,201,JSON.stringify(r.data));return r.headers.get('set-cookie')?.split(';')[0]};
+ const a=await signup('a'),b=await signup('b');assert(a&&b,'Missing session cookie');
+ const noSession=await request('/api/me/collections');assert.equal(noSession.status,401);
+ const unauthDiary=await request('/api/diary');assert.equal(unauthDiary.status,401);
+ const p=await request('/api/me/products',{method:'POST',cookie:a,body:{name:'CI food',brand:'Test',store:'Other',calories:123,protein:12,fat:4,carbs:9,additives:''}});assert.equal(p.status,201,JSON.stringify(p.data));
+ const id=Number(p.data.id);assert(id>0);
+ const denied=await request('/api/me/products/'+id,{method:'DELETE',cookie:b});assert.equal(denied.status,404);
+ const coll=await request('/api/me/collections/favorite/personal/'+id,{method:'PUT',cookie:a});assert.equal(coll.status,204);
+ const mine=await request('/api/me/collections',{cookie:a});assert(mine.data.some(x=>x.kind==='favorite'&&Number(x.product_id)===id));
+ const others=await request('/api/me/collections',{cookie:b});assert(!others.data.some(x=>Number(x.product_id)===id));
+ const entry=await request('/api/me/diary',{method:'POST',cookie:a,body:{product_id:id,entry_date:'2026-10-27',grams:125}});assert.equal(entry.status,201,JSON.stringify(entry.data));
+ const foreign=await request('/api/me/diary',{cookie:b});assert.equal(foreign.status,200);assert(!foreign.data.some(x=>Number(x.product_id)===id));
+ const source=await request('/api/me/showcase-diary',{method:'POST',cookie:a,body:{showcase_id:10000,entry_date:'2026-10-27',grams:80}});assert.equal(source.status,201,JSON.stringify(source.data));
+ const blacklist=await request('/api/me/collections/blacklist/demo/10000',{method:'PUT',cookie:a});assert.equal(blacklist.status,204);
+ const favoriteDemo=await request('/api/me/collections/favorite/demo/1',{method:'PUT',cookie:a});assert.equal(favoriteDemo.status,204);
+ const both=await request('/api/me/collections',{cookie:a});assert(both.data.some(x=>x.source==='demo'&&x.kind==='blacklist'&&Number(x.product_id)===10000));assert(both.data.some(x=>x.source==='demo'&&x.kind==='favorite'&&Number(x.product_id)===1));
+ const unblacklist=await request('/api/me/collections/blacklist/demo/10000',{method:'DELETE',cookie:a});assert.equal(unblacklist.status,204);
+ const unfavorite=await request('/api/me/collections/favorite/demo/1',{method:'DELETE',cookie:a});assert.equal(unfavorite.status,204);
+ const cleared=await request('/api/me/collections',{cookie:a});assert(!cleared.data.some(x=>x.source==='demo'));
+ const goals=await request('/api/me/goals',{method:'PUT',cookie:a,body:{calories:2350,protein:155,fat:75,carbs:260}});assert.equal(goals.status,200,JSON.stringify(goals.data));
+ const savedGoals=await request('/api/me/goals',{cookie:a});assert.equal(Number(savedGoals.data.calories),2350);
+ const otherGoals=await request('/api/me/goals',{cookie:b});assert.equal(otherGoals.data,null);
+ const diaryId=Number(entry.data.id),sourceId=Number(source.data.id);
+ const blockedDiaryEdit=await request('/api/me/diary/'+diaryId,{method:'PATCH',cookie:b,body:{grams:999}});assert.equal(blockedDiaryEdit.status,404);
+ const diaryEdit=await request('/api/me/diary/'+diaryId,{method:'PATCH',cookie:a,body:{grams:150}});assert.equal(diaryEdit.status,200);
+ const blockedSourceDelete=await request('/api/me/showcase-diary/'+sourceId,{method:'DELETE',cookie:b});assert.equal(blockedSourceDelete.status,404);
+ const sourceEdit=await request('/api/me/showcase-diary/'+sourceId,{method:'PATCH',cookie:a,body:{grams:90}});assert.equal(sourceEdit.status,200);
+ const adminList=await request('/api/admin/products',{cookie:a});assert.equal(adminList.status,403,'Regular users must not browse the admin database');
+ const retailer=await request('/api/products');assert.equal(retailer.status,200);assert(retailer.data.some(x=>x.store==='Lidl'&&x.estimated===true),'Seeded Lidl estimates must be visible from SQL');assert.equal(retailer.data.filter(x=>x.catalog_key?.startsWith('retailer-v1-')).length,60,'Migration must seed exactly 60 distinct retailer entries even after rerun');
+ const exportA=await request('/api/me/export',{cookie:a});assert.equal(exportA.status,200);assert(exportA.data.personal_diary.length>0);assert(exportA.data.showcase_diary.length>0);
+ const exportB=await request('/api/me/export',{cookie:b});assert.equal(exportB.status,200);assert.equal(exportB.data.personal_diary.length,0);
+ const forbidden=await request('/api/admin/products',{method:'POST',cookie:a,body:{name:'No',brand:'',store:'Other',calories:1,protein:0,fat:0,carbs:0,additives:'',ingredients:'',recommendation:'Neitrāls'}});assert.equal(forbidden.status,403);
+ const csrf=await request('/api/me/collections/favorite/demo/1',{method:'PUT',cookie:a,origin:'https://attacker.example'});assert.equal(csrf.status,403);
+ const remove=await request('/api/me/products/'+id,{method:'DELETE',cookie:a});assert.equal(remove.status,204);
+ const after=await request('/api/me/collections',{cookie:a});assert(!after.data.some(x=>x.source==='personal'&&Number(x.product_id)===id));
+ console.log('PASS: authentication, account isolation, product CRUD, collections, diaries, export, admin guard, origin guard');
+}catch(e){console.error(e);process.exitCode=1}finally{server.kill('SIGTERM')}

@@ -1,0 +1,45 @@
+name: GrozCalc checks
+on:
+  push:
+    branches: [dev/initial-prototype, main]
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: grozcalc
+          POSTGRES_PASSWORD: grozcalc
+          POSTGRES_DB: grozcalc
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U grozcalc -d grozcalc"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://grozcalc:grozcalc@localhost:5432/grozcalc
+      PORT: 3001
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: node scripts/check-products.mjs
+      - run: npm run build
+      - run: npm install --no-audit --no-fund
+        working-directory: server
+      - run: node --check src/index.js
+        working-directory: server
+      - run: node --check src/migrate.js
+        working-directory: server
+      - run: npm run db
+        working-directory: server
+      - run: npm run db # idempotence: no duplicate imported products
+        working-directory: server
+      - run: node scripts/integration.mjs
