@@ -30,3 +30,8 @@ UPDATE app_users SET role='admin' WHERE email='your-actual-email@example.com';
 ```
 Only run that query for an account you control; do not make admin promotion publicly accessible. Existing `ADMIN_API_KEY` support remains a **development-only** fallback and is disabled when `NODE_ENV=production`.
 **Deployment blockers:** authenticated accounts coexist with a legacy development user-ID fallback, and browser-local demo data is not migrated into the account. Before public deployment, remove development fallbacks, implement request rate limiting and password reset/email verification, and review cross-origin/session security and image hosting.
+
+## Account-specific nutrition goals (new)
+After pulling the latest changes, run `npm run db` to create `user_settings` and `user_custom_products`, then restart the backend. In the Goals page, select or edit a target and click **Save goals to account**. On your next sign-in, stored goals are loaded from PostgreSQL. Existing local targets are not silently overwritten until an account has saved goals.
+The `/api/me/products` authenticated endpoints are implemented for future account-specific custom product syncing, but the existing **My products** interface is still browser-local; do not treat it as synchronized yet.
+The Product manager UI requires an account with the admin role. For local setup, promote your registered account in PostgreSQL as documented above, then sign out and sign back in. Do not expose the legacy development API key in a production client.
