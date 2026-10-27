@@ -40,4 +40,6 @@ jobs:
         working-directory: server
       - run: npm run db
         working-directory: server
+      - run: npm run db # idempotence: no duplicate imported products
+        working-directory: server
       - run: node scripts/integration.mjs
