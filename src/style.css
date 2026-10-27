@@ -29,3 +29,5 @@
 .logo .glass-icon-logo svg{width:94%;height:94%;filter:drop-shadow(0 1px 1px #ffffffc0)}
 .glass-icon{color:#318f77;background:linear-gradient(145deg,#f6fff9 0%,#c4efdc 50%,#7fcdb2 100%);box-shadow:inset 2px 3px 6px #fff,inset -3px -4px 8px #5ea98a47,0 7px 18px #398f7121}
 @media(max-width:700px){.nav-icon{flex-basis:34px}.logo .glass-icon-logo{width:38px!important;height:38px!important}}
+
+.catalog-product-image{width:58px;height:58px;object-fit:contain;background:#f1faf5;border:1px solid #d5eee1;border-radius:14px;margin-bottom:15px;display:block}.upload-success{display:block;color:#158864;margin-top:7px;font-size:11px}
