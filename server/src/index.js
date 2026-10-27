@@ -91,6 +91,19 @@ app.delete('/api/me/collections/:kind/:source/:id',requireAccount,wrap(async(req
 app.get('/health',(_,res)=>res.json({ok:true}));
 app.get('/api/products',wrap(async(req,res)=>{const search=String(req.query.search||'').slice(0,100),store=String(req.query.store||'');const r=await pool.query("SELECT * FROM products WHERE (name ILIKE $1 OR brand ILIKE $1) AND ($2='' OR store=$2) ORDER BY name LIMIT 250",['%'+search+'%',store]);res.json(r.rows)}));
 app.post('/api/admin/products',admin,wrap(async(req,res)=>{const p=product.parse(req.body);const cols=Object.keys(p),vals=Object.values(p);const r=await pool.query('INSERT INTO products ('+cols.join(',')+') VALUES ('+cols.map((_,i)=>'$'+(i+1)).join(',')+') RETURNING *',vals);res.status(201).json(r.rows[0])}));
+
+app.patch('/api/admin/products/:id',admin,wrap(async(req,res)=>{
+ const id=z.coerce.number().int().positive().parse(req.params.id);
+ const update=product.partial().extend({verified:z.boolean().optional()}).strict().parse(req.body);
+ if(!Object.keys(update).length)return res.status(400).json({error:'No changes supplied'});
+ const existing=await pool.query('SELECT source_url,verified FROM products WHERE id=$1',[id]);
+ if(!existing.rowCount)return res.status(404).json({error:'Product not found'});
+ const source=update.source_url===undefined?existing.rows[0].source_url:update.source_url;
+ if(update.verified===true&&!source)return res.status(400).json({error:'A nutrition source URL is required before verification'});
+ const cols=Object.keys(update),values=Object.values(update);
+ const r=await pool.query('UPDATE products SET '+cols.map((k,i)=>k+'=$'+(i+1)).join(',')+' WHERE id=$'+(cols.length+1)+' RETURNING *',[...values,id]);
+ res.json(r.rows[0]);
+}));
 app.delete('/api/admin/products/:id',admin,wrap(async(req,res)=>{const r=await pool.query('DELETE FROM products WHERE id=$1 RETURNING id',[req.params.id]);res.status(r.rowCount?200:404).json(r.rowCount?{deleted:r.rows[0].id}:{error:'Not found'})}));
 app.get('/api/admin/export',admin,wrap(async(_,res)=>{const r=await pool.query('SELECT * FROM products ORDER BY id');res.setHeader('Content-Disposition','attachment; filename="grozcalc-products.json"');res.json(r.rows)}));
 
