@@ -69,6 +69,25 @@ const presetInput=z.object({name:z.string().trim().min(1).max(50),calories:z.num
 app.get('/api/me/presets',requireAccount,wrap(async(req,res)=>{const r=await pool.query('SELECT id,name,calories,protein,fat,carbs FROM goal_presets WHERE user_id=$1 AND is_system=FALSE ORDER BY id',[req.account.id]);res.json(r.rows)}));
 app.post('/api/me/presets',requireAccount,wrap(async(req,res)=>{const p=presetInput.parse(req.body);const r=await pool.query('INSERT INTO goal_presets(user_id,name,calories,protein,fat,carbs,is_system) VALUES($1,$2,$3,$4,$5,$6,FALSE) RETURNING id,name,calories,protein,fat,carbs',[req.account.id,p.name,p.calories,p.protein,p.fat,p.carbs]);res.status(201).json(r.rows[0])}));
 app.delete('/api/me/presets/:id',requireAccount,wrap(async(req,res)=>{const id=z.coerce.number().int().positive().parse(req.params.id);const r=await pool.query('DELETE FROM goal_presets WHERE id=$1 AND user_id=$2 AND is_system=FALSE RETURNING id',[id,req.account.id]);res.status(r.rowCount?204:404).end()}));
+
+const collectionKind=z.enum(['favorite','blacklist']);
+const collectionSource=z.enum(['demo','catalog','personal']);
+const collectionId=z.coerce.number().int().positive().max(Number.MAX_SAFE_INTEGER);
+app.get('/api/me/collections',requireAccount,wrap(async(req,res)=>{
+ const r=await pool.query('SELECT source,product_id,kind FROM account_product_lists WHERE user_id=$1 ORDER BY kind,source,product_id',[req.account.id]);
+ res.json(r.rows);
+}));
+app.put('/api/me/collections/:kind/:source/:id',requireAccount,wrap(async(req,res)=>{
+ const kind=collectionKind.parse(req.params.kind),source=collectionSource.parse(req.params.source),id=collectionId.parse(req.params.id);
+ if(source==='demo'&&id>999999999)return res.status(400).json({error:'Invalid demo ID'});
+ if(source!=='demo'){const table=source==='catalog'?'products':'user_custom_products';const owner=source==='personal'?' AND user_id=$2':'';const args=source==='personal'?[id,req.account.id]:[id];const found=await pool.query('SELECT id FROM '+table+' WHERE id=$1'+owner,args);if(!found.rowCount)return res.status(404).json({error:'Product not found'})}
+ await pool.query('INSERT INTO account_product_lists(user_id,source,product_id,kind) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING',[req.account.id,source,id,kind]);
+ res.status(204).end();
+}));
+app.delete('/api/me/collections/:kind/:source/:id',requireAccount,wrap(async(req,res)=>{
+ const kind=collectionKind.parse(req.params.kind),source=collectionSource.parse(req.params.source),id=collectionId.parse(req.params.id);
+ await pool.query('DELETE FROM account_product_lists WHERE user_id=$1 AND source=$2 AND product_id=$3 AND kind=$4',[req.account.id,source,id,kind]);res.status(204).end();
+}));
 app.get('/health',(_,res)=>res.json({ok:true}));
 app.get('/api/products',wrap(async(req,res)=>{const search=String(req.query.search||'').slice(0,100),store=String(req.query.store||'');const r=await pool.query("SELECT * FROM products WHERE (name ILIKE $1 OR brand ILIKE $1) AND ($2='' OR store=$2) ORDER BY name LIMIT 250",['%'+search+'%',store]);res.json(r.rows)}));
 app.post('/api/admin/products',admin,wrap(async(req,res)=>{const p=product.parse(req.body);const cols=Object.keys(p),vals=Object.values(p);const r=await pool.query('INSERT INTO products ('+cols.join(',')+') VALUES ('+cols.map((_,i)=>'$'+(i+1)).join(',')+') RETURNING *',vals);res.status(201).json(r.rows[0])}));
