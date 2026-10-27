@@ -33,3 +33,32 @@ export type Account={id:string;email:string;role:'user'|'admin'};
 export async function currentAccount():Promise<Account|null>{const r=await fetch(API+'/api/auth/me',{credentials:'include'});if(!r.ok)throw new Error('Account check failed');return (await r.json()).user}
 export async function accountAction(action:'login'|'register',email:string,password:string):Promise<Account>{const r=await fetch(API+'/api/auth/'+action,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(body.error||'Authentication failed');return body}
 export async function signOut():Promise<void>{const r=await fetch(API+'/api/auth/logout',{method:'POST',credentials:'include'});if(!r.ok)throw new Error('Unable to sign out')}
+
+export type NutritionGoals={calories:number;protein:number;fat:number;carbs:number};
+export async function getAccountGoals():Promise<NutritionGoals|null>{
+ const r=await fetch(API+'/api/me/goals',{credentials:'include'});
+ if(!r.ok)throw new Error('Unable to load account goals ('+r.status+')');
+ return r.json();
+}
+export async function saveAccountGoals(goals:NutritionGoals):Promise<NutritionGoals>{
+ const r=await fetch(API+'/api/me/goals',{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(goals)});
+ const body=await r.json().catch(()=>({}));
+ if(!r.ok)throw new Error(body.error||'Unable to save goals ('+r.status+')');
+ return body;
+}
+export type PersonalProduct={id:string;name:string;brand:string;store:string;calories:string;protein:string;fat:string;carbs:string;additives:string};
+export async function getPersonalProducts():Promise<PersonalProduct[]>{
+ const r=await fetch(API+'/api/me/products',{credentials:'include'});
+ if(!r.ok)throw new Error('Unable to load personal products ('+r.status+')');
+ return r.json();
+}
+export async function createPersonalProduct(p:Omit<PersonalProduct,'id'>):Promise<PersonalProduct>{
+ const r=await fetch(API+'/api/me/products',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({...p,calories:Number(p.calories),protein:Number(p.protein),fat:Number(p.fat),carbs:Number(p.carbs)})});
+ const body=await r.json().catch(()=>({}));
+ if(!r.ok)throw new Error(body.error||'Unable to create personal product');
+ return body;
+}
+export async function deletePersonalProduct(id:number):Promise<void>{
+ const r=await fetch(API+'/api/me/products/'+id,{method:'DELETE',credentials:'include'});
+ if(!r.ok)throw new Error('Unable to delete personal product ('+r.status+')');
+}
