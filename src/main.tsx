@@ -3,7 +3,7 @@ import{createRoot}from'react-dom/client';
 import './style.css';
 import sourcedProducts from '../data/sourced-products.json';
 import {GlassIcon} from './GlassIcon';
-import {fetchProducts,healthcheck,createCatalogProduct,deleteCatalogProduct,exportCatalog,uploadCatalogImage,fetchDiary,addDiary,updateDiary,removeDiary,currentAccount,accountAction,signOut,getAccountGoals,saveAccountGoals,getPersonalProducts,createPersonalProduct,deletePersonalProduct,getPersonalDiary,addPersonalDiary,editPersonalDiary,removePersonalDiary,getSavedPresets,createSavedPreset,removeSavedPreset,getCollections,changeCollection,updateCatalogProduct,exportMyData,importCatalogProducts,type SavedPreset,type Account} from './api';
+import {fetchProducts,healthcheck,createCatalogProduct,deleteCatalogProduct,exportCatalog,uploadCatalogImage,fetchDiary,addDiary,updateDiary,removeDiary,currentAccount,accountAction,signOut,getAccountGoals,saveAccountGoals,getPersonalProducts,createPersonalProduct,deletePersonalProduct,getPersonalDiary,addPersonalDiary,editPersonalDiary,removePersonalDiary,getSavedPresets,createSavedPreset,removeSavedPreset,getCollections,changeCollection,updateCatalogProduct,exportMyData,importCatalogProducts,getShowcaseDiary,addShowcaseDiary,editShowcaseDiary,removeShowcaseDiary,type SavedPreset,type Account} from './api';
 import {LayoutDashboard,NotebookTabs,ShoppingBasket,Heart,Ban,ChartNoAxesCombined,Target,PackagePlus,ShieldCheck} from 'lucide-react';
 type P={id:number;name:string;brand:string;store:string;kcal:number;protein:number;fat:number;carbs:number;additives:string;image_url?:string|null;source_url?:string|null;recommendation?:string;verified?:boolean;owner?:'demo'|'custom'|'admin'};
 type E={id:number;pid:number;grams:number;date:string};
