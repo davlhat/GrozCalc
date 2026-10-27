@@ -121,6 +121,16 @@ app.patch('/api/me/showcase-diary/:id',requireAccount,wrap(async(req,res)=>{cons
 app.delete('/api/me/showcase-diary/:id',requireAccount,wrap(async(req,res)=>{const id=z.coerce.number().int().positive().parse(req.params.id);const r=await pool.query('DELETE FROM account_showcase_diary WHERE id=$1 AND user_id=$2 RETURNING id',[id,req.account.id]);res.status(r.rowCount?204:404).end()}));
 app.get('/health',(_,res)=>res.json({ok:true}));
 app.get('/api/products',wrap(async(req,res)=>{const search=String(req.query.search||'').slice(0,100),store=String(req.query.store||'');const r=await pool.query("SELECT * FROM products WHERE (name ILIKE $1 OR brand ILIKE $1) AND ($2='' OR store=$2) ORDER BY name LIMIT 250",['%'+search+'%',store]);res.json(r.rows)}));
+app.get('/api/admin/products',admin,wrap(async(req,res)=>{
+ const search=String(req.query.search||'').trim().slice(0,100);
+ const store=['Rimi','Maxima','Lidl','Other'].includes(req.query.store)?req.query.store:'';
+ const page=Math.max(1,Math.min(100000,z.coerce.number().int().catch(1).parse(req.query.page||1)));
+ const limit=25,where="WHERE (name ILIKE $1 OR brand ILIKE $1) AND ($2='' OR store=$2)";
+ const args=['%'+search+'%',store];
+ const count=await pool.query('SELECT COUNT(*)::int AS total FROM products '+where,args);
+ const rows=await pool.query('SELECT * FROM products '+where+' ORDER BY id DESC LIMIT $3 OFFSET $4',[...args,limit,(page-1)*limit]);
+ res.json({products:rows.rows,total:count.rows[0].total,page,pageSize:limit});
+}));
 app.post('/api/admin/products',admin,wrap(async(req,res)=>{const p=product.parse(req.body);const cols=Object.keys(p),vals=Object.values(p);const r=await pool.query('INSERT INTO products ('+cols.join(',')+') VALUES ('+cols.map((_,i)=>'$'+(i+1)).join(',')+') RETURNING *',vals);res.status(201).json(r.rows[0])}));
 
 
